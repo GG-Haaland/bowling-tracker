@@ -32,7 +32,7 @@ export default function IntroScreen({
         </div>
         <div className="intro-screen-box">
           <h2>A<br />BOWLING<br />CLUB</h2>
-          <p>{loading ? 'Loading data...' : 'Select your team and press the button to enter the tracker.'}</p>
+          <p>{loading ? 'Loading data...' : 'Select your Gutter, week, and team then press the button.'}</p>
         </div>
 
         {/* Team selector */}
