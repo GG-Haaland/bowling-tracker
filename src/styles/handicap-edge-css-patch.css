@@ -1,0 +1,61 @@
+/* ─── HANDICAP EDGE DISPLAY ─────────────────────────────── */
+/* ADD THIS TO THE END OF src/styles/index.css */
+
+.hcp-edge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.4em 1em;
+  gap: 0.5em;
+}
+
+.hcp-edge-team-name {
+  font-size: 1.3em;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--yellow);
+  text-shadow: 0 0 18px rgba(236, 178, 54, 0.7), 0 0 40px rgba(236, 178, 54, 0.3);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.hcp-edge-label-sm {
+  font-size: 0.72em;
+  letter-spacing: 0.14em;
+  color: var(--soft-black);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+#hcp-diff-number {
+  font-size: 5em;
+  font-weight: 900;
+  color: var(--yellow);
+  line-height: 1;
+  text-align: center;
+  text-shadow:
+    0 0 10px rgba(236, 178, 54, 0.9),
+    0 0 25px rgba(236, 178, 54, 0.6),
+    0 0 60px rgba(236, 178, 54, 0.3);
+  animation: hcp-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes hcp-pulse {
+  0%,100% { text-shadow: 0 0 10px rgba(236,178,54,0.9), 0 0 25px rgba(236,178,54,0.6), 0 0 60px rgba(236,178,54,0.3); }
+  50%      { text-shadow: 0 0 16px rgba(236,178,54,1),   0 0 40px rgba(236,178,54,0.8), 0 0 90px rgba(236,178,54,0.5); }
+}
+
+.hcp-edge-pins-label {
+  font-size: 0.78em;
+  color: var(--smoke);
+  letter-spacing: 0.08em;
+}
+
+.hcp-edge-divider {
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--soft-black), transparent);
+  margin: 0.4em 0;
+}

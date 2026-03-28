@@ -80,14 +80,14 @@ export default function App() {
   if (view === 'intro') {
     return (
       <IntroScreen
-  selectedTeamIndex={selectedTeamIndex}
-  selectedDate={selectedDate}
-  currentWeek={currentWeekIndex + 1}
-  loading={sheetData.loading}
-  onChangeTeam={handleChangeTeam}
-  onChangeWeek={handleChangeWeek}    // ← this line is missing
-  onEnter={handleEnterDashboard}
-/>
+        selectedTeamIndex={selectedTeamIndex}
+        selectedDate={selectedDate}
+        currentWeek={currentWeekIndex + 1}
+        loading={sheetData.loading}
+        onChangeTeam={handleChangeTeam}
+        onChangeWeek={handleChangeWeek}
+        onEnter={handleEnterDashboard}
+      />
     );
   }
 
