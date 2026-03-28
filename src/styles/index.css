@@ -567,3 +567,177 @@ body {
   background: linear-gradient(to right, transparent, var(--soft-black), transparent);
   margin: 0.4em 0;
 }
+/* ═══════════════════════════════════════════════════════
+   READABILITY & MOBILE UX PATCH
+   Append this to the END of src/styles/index.css
+   ═══════════════════════════════════════════════════════ */
+
+/* ─── 1. BUMP BASE FONT SIZE ─────────────────────────
+   Going from 13px → 16px. Since almost everything uses
+   em units, this single change cascades everywhere.
+   On mobile, bump even higher to 17px.
+   ──────────────────────────────────────────────────── */
+body {
+  font-size: 16px;
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 17px;
+  }
+}
+
+/* ─── 2. BIGGER TOUCH TARGETS ─────────────────────────
+   Week arrows, game buttons, and select dropdowns
+   need at least 44px height for comfortable tapping.
+   ──────────────────────────────────────────────────── */
+.week-nav-btn {
+  width: 2.8em;
+  height: 2.8em;
+  font-size: 1em;
+  border-radius: 0.5em;
+}
+
+.game-select-btn {
+  padding: 0.7em 0.9em;
+  font-size: 1em;
+  border-radius: 0.5em;
+}
+
+/* ─── 3. BETTER CARD PADDING ON MOBILE ────────────────
+   A bit more breathing room inside cards.
+   ──────────────────────────────────────────────────── */
+.card__container {
+  padding: 1.2em;
+}
+
+@media (max-width: 480px) {
+  .card__container {
+    padding: 1em;
+  }
+}
+
+/* ─── 4. HANDICAP EDGE LABELS ─────────────────────────
+   "TEAM WITH EDGE" and "PINS" labels were nearly
+   invisible. Bump size and brighten color.
+   ──────────────────────────────────────────────────── */
+.hcp-edge-label-sm {
+  font-size: 0.82em;
+  color: var(--smoke);
+  letter-spacing: 0.12em;
+}
+
+.hcp-edge-pins-label {
+  font-size: 0.9em;
+  letter-spacing: 0.1em;
+}
+
+/* Slightly bigger team name in edge card */
+.hcp-edge-team-name {
+  font-size: 1.5em;
+}
+
+/* ─── 5. MATCHUP PICKER DROPDOWN ──────────────────────
+   Select text needs to be legible on mobile.
+   ──────────────────────────────────────────────────── */
+.card select,
+.card__container select {
+  font-size: 1em !important;
+  padding: 0.6em 0.8em !important;
+  min-height: 2.8em;
+}
+
+/* ─── 6. ROSTER PLAYER ROWS ──────────────────────────
+   Bigger tap targets and more readable names/stats.
+   ──────────────────────────────────────────────────── */
+.roster-player {
+  padding: 0.55em 0.7em;
+  min-height: 2.8em;
+}
+
+.roster-player .rp-name {
+  font-size: 0.95em;
+}
+
+.rp-avg,
+.rp-hcp {
+  font-size: 0.85em;
+}
+
+.roster-list {
+  max-height: 260px;
+}
+
+/* ─── 7. CARD TITLE BAR ──────────────────────────────
+   Slightly larger section headers.
+   ──────────────────────────────────────────────────── */
+.card-titlebar__text {
+  font-size: 1.2em;
+  letter-spacing: 0.08em;
+}
+
+.card-titlebar {
+  padding: 0.85em 1em;
+}
+
+/* ─── 8. PROFILE CARD (YOUR TEAM) ────────────────────
+   The "YOUR TEAM" label and team name.
+   ──────────────────────────────────────────────────── */
+.profile-card {
+  padding: 1em;
+}
+
+/* ─── 9. WEEK SELECTOR CARD ──────────────────────────
+   Week number and date text.
+   ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .dashboard-stack {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+}
+
+/* ─── 10. SCORE CHIPS IN WEEK RESULTS ────────────────
+   Player name + score chips need to be readable.
+   ──────────────────────────────────────────────────── */
+
+/* ─── 11. INTRO BADGE SCALES BETTER ON MOBILE ────────
+   The intro screen badge was fixed at 260px which
+   felt small on larger phones. Let it flex.
+   ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .intro-badge {
+    width: 85vw;
+    max-width: 320px;
+  }
+}
+
+/* ─── 12. BUTTONS ────────────────────────────────────
+   Ensure all action buttons are finger-friendly.
+   ──────────────────────────────────────────────────── */
+.contact-btn {
+  padding: 0.9em;
+  font-size: 1.05em;
+}
+
+.cta-yellow-btn,
+.cta-red-btn {
+  padding: 0.8em 1em;
+  min-height: 2.8em;
+}
+
+.mode-btn {
+  padding: 0.7em 0.5em;
+  font-size: 0.95em;
+}
+
+/* ─── 13. HANDICAP PAGE TABLE ────────────────────────
+   Score table was very tiny at 0.78em of 13px.
+   Now 0.78em of 16px = ~12.5px which is better.
+   But let's bump it a bit more on mobile.
+   ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .score-table {
+    font-size: 0.85em;
+  }
+}
