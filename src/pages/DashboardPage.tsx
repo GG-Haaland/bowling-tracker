@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import type { TeamGame } from '@/lib/types';
 import type { SheetState } from '@/hooks/useSheetData';
-
 import MatchupPicker from '@/components/MatchupPicker';
 import RosterCard from '@/components/RosterCard';
 import HcpCalcCard from '@/components/HcpCalcCard';
@@ -22,6 +21,7 @@ interface DashboardPageProps {
   currentWeekIndex: number;
   selectedDate: Date;
   onChangeWeek: (delta: number) => void;
+  onChangeTeamByName: (teamName: string) => void;
   onNavigateHandicap: () => void;
 }
 
@@ -31,6 +31,7 @@ export default function DashboardPage({
   currentWeekIndex,
   selectedDate,
   onChangeWeek,
+  onChangeTeamByName,
   onNavigateHandicap,
 }: DashboardPageProps) {
   const weekNum = currentWeekIndex + 1;
@@ -77,9 +78,20 @@ export default function DashboardPage({
     setMatchupSelected(true);
   }, [selectedTeamName]);
 
+  // When team changes in Matchup Picker, propagate up to App
+  const handleTeamChange = useCallback((teamName: string) => {
+    onChangeTeamByName(teamName);
+    // Reset matchup state since team changed
+    setTeamAName('');
+    setTeamBName('');
+    setSelectedPlayersA([]);
+    setSelectedPlayersB([]);
+    setMatchupSelected(false);
+  }, [onChangeTeamByName]);
+
   /* ─────────────────────────────────────────────
      SHARED: Your Team profile card
-  ───────────────────────────────────────────── */
+     ───────────────────────────────────────────── */
   const yourTeamCard = (
     <div className="profile-card">
       <div style={{
@@ -88,35 +100,36 @@ export default function DashboardPage({
         padding: '1em',
         marginBottom: '0.7em',
       }}>
-        <div style={{ fontSize: '0.72em', letterSpacing: '0.16em', color: 'var(--light-blue)', marginBottom: '0.2em' }}>
+        <div style={{
+          fontSize: '0.72em',
+          letterSpacing: '0.16em',
+          color: 'var(--light-blue)',
+          marginBottom: '0.2em',
+        }}>
           YOUR TEAM
         </div>
-        <div style={{ fontSize: '1.2em', fontWeight: 900, color: 'white', letterSpacing: '0.06em' }}>
+        <div style={{
+          fontSize: '1.2em',
+          fontWeight: 900,
+          color: 'white',
+          letterSpacing: '0.06em',
+        }}>
           {selectedTeamName.toUpperCase()}
         </div>
       </div>
-      <button className="contact-btn" onClick={onNavigateHandicap} style={{ marginBottom: 0, padding: '0.6em', fontSize: '0.88em' }}>
+      <button
+        className="contact-btn"
+        onClick={onNavigateHandicap}
+        style={{ marginBottom: 0, padding: '0.6em', fontSize: '0.88em' }}
+      >
         HANDICAP SHEET
       </button>
     </div>
   );
 
   /* ─────────────────────────────────────────────
-     SHARED: Matchup Picker
-  ───────────────────────────────────────────── */
-  const matchupPicker = (
-    <MatchupPicker
-      schedule={schedule}
-      selectedTeamName={selectedTeamName}
-      getTeamGames={sheetData.getTeamGames}
-      roster={sheetData.roster}
-      onSelectGame={handleSelectGame}
-    />
-  );
-
-  /* ─────────────────────────────────────────────
-     SHARED: Week Selector + Data Status
-  ───────────────────────────────────────────── */
+     SHARED: Week Selector
+     ───────────────────────────────────────────── */
   const weekSelector = (
     <WeekSelector
       currentWeek={weekNum}
@@ -125,14 +138,27 @@ export default function DashboardPage({
     />
   );
 
+  /* ─────────────────────────────────────────────
+     SHARED: Matchup Picker (now with onTeamChange)
+     ───────────────────────────────────────────── */
+  const matchupPicker = (
+    <MatchupPicker
+      schedule={schedule}
+      selectedTeamName={selectedTeamName}
+      getTeamGames={sheetData.getTeamGames}
+      roster={sheetData.roster}
+      onSelectGame={handleSelectGame}
+      onTeamChange={handleTeamChange}
+    />
+  );
+
   const dataStatus = <DataStatusCard roster={sheetData.roster} />;
 
   /* ═════════════════════════════════════════════
      FUTURE WEEK LAYOUT
-     YOUR TEAM → HANDICAP EDGE → MATCHUP PICKER
-     → PLAYER CARDS → HCP CALCULATOR
-     → WEEK SELECTOR → DATA STATUS
-  ═════════════════════════════════════════════ */
+     YOUR TEAM → WEEK SELECTOR → HANDICAP EDGE →
+     MATCHUP PICKER → PLAYER CARDS → HCP CALCULATOR → DATA STATUS
+     ═════════════════════════════════════════════ */
   if (!isPastWeek) {
     return (
       <div className="dashboard dot-bg" style={{ opacity: 1 }}>
@@ -140,7 +166,10 @@ export default function DashboardPage({
           {/* 1. YOUR TEAM */}
           {yourTeamCard}
 
-          {/* 2. HANDICAP EDGE */}
+          {/* 2. WEEK SELECTOR (under handicap button) */}
+          {weekSelector}
+
+          {/* 3. HANDICAP EDGE */}
           <HandicapEdgeCard
             selectedPlayersA={selectedPlayersA}
             selectedPlayersB={selectedPlayersB}
@@ -149,10 +178,10 @@ export default function DashboardPage({
             roster={sheetData.roster}
           />
 
-          {/* 3. MATCHUP PICKER */}
+          {/* 4. MATCHUP PICKER */}
           {matchupPicker}
 
-          {/* 4. PLAYER CARDS (only after matchup selected) */}
+          {/* 5. PLAYER CARDS (only after matchup selected) */}
           {matchupSelected ? (
             <>
               <RosterCard
@@ -183,7 +212,7 @@ export default function DashboardPage({
             </div>
           )}
 
-          {/* 5. HCP CALCULATOR */}
+          {/* 6. HCP CALCULATOR */}
           <HcpCalcCard
             selectedPlayersA={selectedPlayersA}
             selectedPlayersB={selectedPlayersB}
@@ -191,9 +220,6 @@ export default function DashboardPage({
             teamBName={teamBName}
             roster={sheetData.roster}
           />
-
-          {/* 6. WEEK SELECTOR */}
-          {weekSelector}
 
           {/* 7. DATA STATUS */}
           {dataStatus}
@@ -204,26 +230,29 @@ export default function DashboardPage({
 
   /* ═════════════════════════════════════════════
      PAST WEEK LAYOUT
-     YOUR TEAM → TOP TEN BOWLERS → MATCHUP PICKER
-     → WEEK RESULTS → WEEK SELECTOR → DATA STATUS
-  ═════════════════════════════════════════════ */
+     YOUR TEAM → WEEK SELECTOR → TOP TEN BOWLERS →
+     MATCHUP PICKER → WEEK RESULTS → DATA STATUS
+     ═════════════════════════════════════════════ */
   return (
     <div className="dashboard dot-bg" style={{ opacity: 1 }}>
       <div className="dashboard-stack">
         {/* 1. YOUR TEAM */}
         {yourTeamCard}
 
-        {/* 2. TOP TEN BOWLERS */}
+        {/* 2. WEEK SELECTOR (under handicap button) */}
+        {weekSelector}
+
+        {/* 3. TOP TEN BOWLERS */}
         <TopBowls
           weekNum={weekNum}
           weekDateMap={sheetData.weekDateMap}
           loadTeamData={sheetData.loadTeamData}
         />
 
-        {/* 3. MATCHUP PICKER */}
+        {/* 4. MATCHUP PICKER */}
         {matchupPicker}
 
-        {/* 4. WEEK RESULTS */}
+        {/* 5. WEEK RESULTS */}
         <WeekScorecard
           teamData={teamData}
           weekNum={weekNum}
@@ -231,9 +260,6 @@ export default function DashboardPage({
           loadTeamData={sheetData.loadTeamData}
           lookupTeamAvg={sheetData.lookupTeamAvg}
         />
-
-        {/* 5. WEEK SELECTOR */}
-        {weekSelector}
 
         {/* 6. DATA STATUS */}
         {dataStatus}
