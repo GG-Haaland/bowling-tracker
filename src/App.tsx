@@ -22,10 +22,8 @@ export default function App() {
   // After data loads, find the current week
   useEffect(() => {
     if (sheetData.loading) return;
-
     const today = getMostRecentWednesday();
     let matchIdx = -1;
-
     // Try weekDateMap
     for (let w = 1; w <= TOTAL_WEEKS; w++) {
       const d = sheetData.weekDateMap[w];
@@ -34,7 +32,6 @@ export default function App() {
         break;
       }
     }
-
     // Fall back to most recent past week
     if (matchIdx === -1) {
       const now = new Date();
@@ -44,7 +41,6 @@ export default function App() {
       }
     }
     if (matchIdx === -1) matchIdx = 0;
-
     setCurrentWeekIndex(matchIdx);
     setSelectedDate(sheetData.weekDateMap[matchIdx + 1] || today);
   }, [sheetData.loading, sheetData.weekDateMap]);
@@ -53,6 +49,16 @@ export default function App() {
     setSelectedTeamIndex(prev =>
       (prev + delta + TEAM_NAMES.length) % TEAM_NAMES.length
     );
+  }, []);
+
+  // New: change team by name (called from MatchupPicker dropdown)
+  const handleChangeTeamByName = useCallback((teamName: string) => {
+    const idx = TEAM_NAMES.findIndex(
+      t => t.toLowerCase() === teamName.toLowerCase()
+    );
+    if (idx !== -1) {
+      setSelectedTeamIndex(idx);
+    }
   }, []);
 
   const handleChangeWeek = useCallback((delta: number) => {
@@ -109,6 +115,7 @@ export default function App() {
       currentWeekIndex={currentWeekIndex}
       selectedDate={selectedDate}
       onChangeWeek={handleChangeWeek}
+      onChangeTeamByName={handleChangeTeamByName}
       onNavigateHandicap={handleNavigateHandicap}
     />
   );
