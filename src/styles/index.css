@@ -781,6 +781,45 @@ body {
   color: var(--white-smoke) !important;
   padding-right: 0.8em;
 }
+/* ─── DASHBOARD READABILITY BOOST ─────────────────── */
+
+/* Card titles — bigger, brighter, bolder */
+.card-titlebar__text {
+  font-size: 1.4em !important;
+  color: var(--white-smoke) !important;
+  font-weight: 900 !important;
+}
+
+/* All small labels inside cards — bump to readable size and brighten */
+.card__container div {
+  font-size: max(0.88em, 14px);
+  line-height: 1.5;
+}
+
+/* "YOUR TEAM" and similar sub-labels — way too dark right now */
+.card__container div[style*="color: var(--soft-black)"],
+.card__container div[style*="color:var(--soft-black)"] {
+  color: var(--smoke) !important;
+  font-size: 0.85em !important;
+}
+
+/* Player names in week results — brighter, bigger */
+.card__container span[style*="font-weight: 900"],
+.card__container span[style*="font-weight:900"] {
+  font-size: 1.1em !important;
+}
+
+/* Profile card "YOUR TEAM" label */
+.profile-card div[style*="letter-spacing"] {
+  font-size: 0.85em !important;
+  color: var(--light-blue) !important;
+}
+
+/* Week selector text — bigger */
+.week-nav-btn {
+  width: 2.8em !important;
+  height: 2.8em !important;
+}
 /* ─── 13. HANDICAP PAGE TABLE ────────────────────────
    Score table was very tiny at 0.78em of 13px.
    Now 0.78em of 16px = ~12.5px which is better.
