@@ -202,11 +202,11 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                 No players found
               </div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table style={{ minWidth: '36em', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'auto' }}>
                   <colgroup>
                     <col style={{ width: '2em' }} />
-                    <col />
+                    <col style={{ minWidth: '10em' }} />
                     <col style={{ width: '3.5em' }} />
                     <col style={{ width: '3.2em' }} />
                     <col style={{ width: '2.6em' }} />
@@ -222,10 +222,18 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                       textTransform: 'uppercase' as const,
                       borderBottom: '2px solid rgba(255,255,255,0.1)',
                     }}>
-                      <th onClick={() => handleSort('rank')} style={{ ...thStyle, textAlign: 'left', cursor: 'pointer' }}>
+                      {/* Rank header — frozen */}
+                      <th onClick={() => handleSort('rank')} style={{
+                        ...thStyle, textAlign: 'left', cursor: 'pointer',
+                        position: 'sticky', left: 0, zIndex: 2, background: '#25252f',
+                      }}>
                         #<SortArrow active={sortKey === 'rank'} dir={sortDir} />
                       </th>
-                      <th onClick={() => handleSort('name')} style={{ ...thStyle, textAlign: 'left', cursor: 'pointer' }}>
+                      {/* Player header — frozen */}
+                      <th onClick={() => handleSort('name')} style={{
+                        ...thStyle, textAlign: 'left', cursor: 'pointer',
+                        position: 'sticky', left: '2em', zIndex: 2, background: '#25252f',
+                      }}>
                         PLAYER<SortArrow active={sortKey === 'name'} dir={sortDir} />
                       </th>
                       <th onClick={() => handleSort('avg')} style={{ ...thStyle, textAlign: 'right', cursor: 'pointer' }}>
@@ -258,15 +266,24 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                             borderBottom: i < sorted.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
                           }}
                         >
-                          <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle', color: rankColor, fontWeight: 900, fontSize: '1em' }}>
+                          {/* Rank — frozen */}
+                          <td style={{
+                            padding: '0.55em 0.3em', verticalAlign: 'middle',
+                            color: rankColor, fontWeight: 900, fontSize: '1em',
+                            position: 'sticky', left: 0, zIndex: 1, background: '#25252f',
+                          }}>
                             {i + 1}
                           </td>
-                          <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle' }}>
+                          {/* Player — frozen */}
+                          <td style={{
+                            padding: '0.55em 0.3em', verticalAlign: 'middle',
+                            position: 'sticky', left: '2em', zIndex: 1, background: '#25252f',
+                          }}>
                             <div style={{
                               color: 'var(--white-smoke)',
                               fontWeight: 700,
                               fontSize: '0.95em',
-                              lineHeight: 1.2,
+                              whiteSpace: 'nowrap',
                             }}>
                               {p.name}
                             </div>
@@ -275,7 +292,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                               fontSize: '0.7em',
                               textTransform: 'uppercase',
                               letterSpacing: '0.06em',
-                              lineHeight: 1.2,
+                              whiteSpace: 'nowrap',
                             }}>
                               {p.team}
                             </div>

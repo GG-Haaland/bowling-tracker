@@ -350,7 +350,7 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
               </div>
             ) : (
               <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                <table style={{ minWidth: '36em', borderCollapse: 'collapse', tableLayout: 'auto' }}>
+                <table style={{ minWidth: '36em', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'auto' }}>
                   <colgroup>
                     {/* Place column */}
                     {presentCols.some(c => c.key === 'place') && <col style={{ width: '2em' }} />}
@@ -371,15 +371,23 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
                       textTransform: 'uppercase' as const,
                       borderBottom: '2px solid rgba(255,255,255,0.1)',
                     }}>
-                      {/* Place header */}
+                      {/* Place header — frozen */}
                       {presentCols.some(c => c.key === 'place') && (
-                        <th onClick={() => handleSort('place')} style={{ ...thStyle, textAlign: 'left', cursor: 'pointer' }}>
+                        <th onClick={() => handleSort('place')} style={{
+                          ...thStyle, textAlign: 'left', cursor: 'pointer',
+                          position: 'sticky', left: 0, zIndex: 2,
+                          background: '#25252f',
+                        }}>
                           #<SortArrow active={sortKey === 'place'} dir={sortDir} />
                         </th>
                       )}
 
-                      {/* Team header */}
-                      <th onClick={() => handleSort('team')} style={{ ...thStyle, textAlign: 'left', cursor: 'pointer' }}>
+                      {/* Team header — frozen */}
+                      <th onClick={() => handleSort('team')} style={{
+                        ...thStyle, textAlign: 'left', cursor: 'pointer',
+                        position: 'sticky', left: presentCols.some(c => c.key === 'place') ? '2em' : 0, zIndex: 2,
+                        background: '#25252f',
+                      }}>
                         TEAM<SortArrow active={sortKey === 'team'} dir={sortDir} />
                       </th>
 
@@ -411,15 +419,24 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
                             background: highlighted ? 'rgba(255, 204, 0, 0.06)' : 'transparent',
                           }}
                         >
-                          {/* Place */}
+                          {/* Place — frozen */}
                           {presentCols.some(c => c.key === 'place') && (
-                            <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle', color: placeColor, fontWeight: 900, fontSize: '1em' }}>
+                            <td style={{
+                              padding: '0.55em 0.3em', verticalAlign: 'middle',
+                              color: placeColor, fontWeight: 900, fontSize: '1em',
+                              position: 'sticky', left: 0, zIndex: 1,
+                              background: highlighted ? '#29272a' : '#25252f',
+                            }}>
                               {t.place}
                             </td>
                           )}
 
-                          {/* Team name */}
-                          <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle' }}>
+                          {/* Team name — frozen */}
+                          <td style={{
+                            padding: '0.55em 0.3em', verticalAlign: 'middle',
+                            position: 'sticky', left: presentCols.some(c => c.key === 'place') ? '2em' : 0, zIndex: 1,
+                            background: highlighted ? '#29272a' : '#25252f',
+                          }}>
                             <div style={{
                               color: highlighted ? 'var(--yellow)' : 'var(--white-smoke)',
                               fontWeight: highlighted ? 900 : 700,
