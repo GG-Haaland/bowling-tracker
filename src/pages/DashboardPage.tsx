@@ -24,6 +24,8 @@ interface DashboardPageProps {
   onChangeTeamByName: (teamName: string) => void;
   onNavigateHandicap: () => void;
   onNavigateLeaderboard: () => void;
+  onNavigateSchedule: () => void;
+  onNavigateStandings: () => void;
 }
 
 export default function DashboardPage({
@@ -35,6 +37,8 @@ export default function DashboardPage({
   onChangeTeamByName,
   onNavigateHandicap,
   onNavigateLeaderboard,
+  onNavigateSchedule,
+  onNavigateStandings,
 }: DashboardPageProps) {
   const weekNum = currentWeekIndex + 1;
   const schedule = sheetData.allWeeks[currentWeekIndex] || { week: '', date: '', slots: [] };
@@ -111,6 +115,30 @@ export default function DashboardPage({
         }}
       >
         LEADERBOARD
+      </button>
+      <button
+        className="contact-btn"
+        onClick={onNavigateSchedule}
+        style={{
+          flex: 1,
+          padding: '0.55em 0.8em',
+          fontSize: '0.82em',
+          letterSpacing: '0.1em',
+        }}
+      >
+        SCHEDULE
+      </button>
+      <button
+        className="contact-btn"
+        onClick={onNavigateStandings}
+        style={{
+          flex: 1,
+          padding: '0.55em 0.8em',
+          fontSize: '0.82em',
+          letterSpacing: '0.1em',
+        }}
+      >
+        STANDINGS
       </button>
     </div>
   );

@@ -1,7 +1,7 @@
 // ── Google Sheets Configuration ──────────────────────────────────────────────
 
 export const SHEET_BASE =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vRT1FDsfXFCtxT8m8Eo0guOyGEhfOUDJhiFsYe1BlN_hZV3InlRtil0lqSanZ1LwdTr5q_sJc4BDZrn/pub?single=true&output=csv';
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPt3d_kWokuuI0tCFpB1GNChdyfOa2iWdw7wfjCdCRR56swjh93UL09_ZG5moi1z3ot79SiDbULwQ/pub?single=true&output=csv';
 
 export const SHEET_URLS = {
   roster:    SHEET_BASE + '&gid=61',

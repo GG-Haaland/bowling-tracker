@@ -4,9 +4,11 @@ import { useSheetData } from '@/hooks/useSheetData';
 import IntroScreen from '@/components/IntroScreen';
 import HandicapPage from '@/components/HandicapPage';
 import LeaderboardPage from '@/pages/LeaderboardPage';
+import SchedulePage from '@/pages/SchedulePage';
+import StandingsPage from '@/pages/StandingsPage';
 import DashboardPage from '@/pages/DashboardPage';
 
-type View = 'intro' | 'dashboard' | 'handicap' | 'leaderboard';
+type View = 'intro' | 'dashboard' | 'handicap' | 'leaderboard' | 'schedule' | 'standings';
 
 export default function App() {
   const [view, setView] = useState<View>('intro');
@@ -95,6 +97,22 @@ export default function App() {
     setView('dashboard');
   }, []);
 
+  const handleNavigateSchedule = useCallback(() => {
+    setView('schedule');
+  }, []);
+
+  const handleBackFromSchedule = useCallback(() => {
+    setView('dashboard');
+  }, []);
+
+  const handleNavigateStandings = useCallback(() => {
+    setView('standings');
+  }, []);
+
+  const handleBackFromStandings = useCallback(() => {
+    setView('dashboard');
+  }, []);
+
   if (view === 'intro') {
     return (
       <IntroScreen
@@ -128,6 +146,25 @@ export default function App() {
     );
   }
 
+  if (view === 'schedule') {
+    return (
+      <SchedulePage
+        onBack={handleBackFromSchedule}
+        selectedTeamName={selectedTeamName}
+        initialWeekIndex={currentWeekIndex}
+      />
+    );
+  }
+
+  if (view === 'standings') {
+    return (
+      <StandingsPage
+        onBack={handleBackFromStandings}
+        selectedTeamName={selectedTeamName}
+      />
+    );
+  }
+
   return (
     <DashboardPage
       sheetData={sheetData}
@@ -138,6 +175,8 @@ export default function App() {
       onChangeTeamByName={handleChangeTeamByName}
       onNavigateHandicap={handleNavigateHandicap}
       onNavigateLeaderboard={handleNavigateLeaderboard}
+      onNavigateSchedule={handleNavigateSchedule}
+      onNavigateStandings={handleNavigateStandings}
     />
   );
 }
