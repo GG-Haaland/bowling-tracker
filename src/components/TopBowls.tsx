@@ -80,8 +80,7 @@ export default function TopBowls({ weekNum, weekDateMap, loadTeamData }: TopBowl
                   {s.team}
                 </div>
               </div>
-              <span style={{ color: 'var(--yellow)', fontWeight: 900, fontSize: '1.15em', letterSpacing: '0.02em' }}>
-                {s.score}
+              <span style={{ color: 'var(--yellow)', fontWeight: 700, fontSize: '1.15em', letterSpacing: '0.03em', paddingRight: '0.8em' }}>                {s.score}
               </span>
             </div>
           ))

@@ -755,6 +755,32 @@ body {
       transparent 3px
     );
 }
+.profile-card {
+  background: #8a8a8a;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 3px);
+}
+#dashboard,
+#dashboard * {
+  font-family: 'Helvetica Neue Condensed Bold', 'Helvetica Neue', 'Arial Narrow', sans-serif;
+}
+.card__container {
+  background: #8a8a8a;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.04) 0px, rgba(0,0,0,0.04) 1px, transparent 1px, transparent 3px);
+}
+.card__container > div {
+  background: #1c1c25;
+  border-radius: 0.6em;
+  padding: 0.8em;
+  margin-bottom: 0.5em;
+}
+#top-bowls-panel > div > span:last-child {
+  color: var(--white-smoke) !important;
+  padding-right: 0.8em;
+}
 /* ─── 13. HANDICAP PAGE TABLE ────────────────────────
    Score table was very tiny at 0.78em of 13px.
    Now 0.78em of 16px = ~12.5px which is better.
