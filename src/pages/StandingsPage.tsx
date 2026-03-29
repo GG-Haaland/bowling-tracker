@@ -350,12 +350,12 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
               </div>
             ) : (
               <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                <table style={{ minWidth: '36em', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'auto' }}>
+                <table style={{ minWidth: '32em', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'auto' }}>
                   <colgroup>
                     {/* Place column */}
                     {presentCols.some(c => c.key === 'place') && <col style={{ width: '2em' }} />}
-                    {/* Team name column — generous min so it never gets crushed */}
-                    <col style={{ minWidth: '10em' }} />
+                    {/* Team name column — compact, long names wrap */}
+                    <col style={{ width: '8.5em' }} />
                     {/* Stat columns */}
                     {presentCols.filter(c => c.key !== 'place').map(c => (
                       <col key={c.key} style={{ width: c.width }} />
@@ -441,7 +441,7 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
                               color: highlighted ? 'var(--yellow)' : 'var(--white-smoke)',
                               fontWeight: highlighted ? 900 : 700,
                               fontSize: '0.92em',
-                              whiteSpace: 'nowrap',
+                              lineHeight: 1.2,
                             }}>
                               {t.team}
                             </div>

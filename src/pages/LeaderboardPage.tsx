@@ -203,10 +203,10 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
               </div>
             ) : (
               <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-                <table style={{ minWidth: '36em', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'auto' }}>
+                <table style={{ minWidth: '32em', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'auto' }}>
                   <colgroup>
                     <col style={{ width: '2em' }} />
-                    <col style={{ minWidth: '10em' }} />
+                    <col style={{ width: '7.5em' }} />
                     <col style={{ width: '3.5em' }} />
                     <col style={{ width: '3.2em' }} />
                     <col style={{ width: '2.6em' }} />
@@ -283,7 +283,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                               color: 'var(--white-smoke)',
                               fontWeight: 700,
                               fontSize: '0.95em',
-                              whiteSpace: 'nowrap',
+                              lineHeight: 1.2,
                             }}>
                               {p.name}
                             </div>
@@ -292,7 +292,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                               fontSize: '0.7em',
                               textTransform: 'uppercase',
                               letterSpacing: '0.06em',
-                              whiteSpace: 'nowrap',
+                              lineHeight: 1.2,
                             }}>
                               {p.team}
                             </div>
