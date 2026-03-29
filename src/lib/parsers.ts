@@ -1,7 +1,6 @@
 import type { Player, TeamPlayer, TeamData, GameRow, WeekSchedule, TimeSlot, StandingsEntry, TopScore } from './types';
 
 // ── CSV Line Parser (handles quoted fields with embedded commas) ────────────
-
 export function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = '';
@@ -21,8 +20,7 @@ export function parseCSVLine(line: string): string[] {
   return result;
 }
 
-// ── Roster / Leaderboard CSV ────────────────────────────────────────────────
-
+// ── Roster / Leaderboard CSV ──────────────────────────────────────────────────
 export function parseRosterCSV(csv: string): Player[] {
   const lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
   if (lines.length < 2) return [];
@@ -45,38 +43,45 @@ export function parseRosterCSV(csv: string): Player[] {
 
   return lines.slice(headerIdx + 1).filter(l => l.trim()).map(line => {
     const parts = parseCSVLine(line);
-    const name  = (parts[nameIdx] || '').trim();
-    const team  = teamIdx >= 0 ? (parts[teamIdx] || '').trim() : '';
-    const avg   = avgIdx >= 0 ? (parseFloat(parts[avgIdx]) || 0) : 0;
+    const name = (parts[nameIdx] || '').trim();
+    const team = teamIdx >= 0 ? (parts[teamIdx] || '').trim() : '';
+    const avg  = avgIdx >= 0 ? (parseFloat(parts[avgIdx]) || 0) : 0;
     const handicap = Math.max(0, Math.floor((200 - avg) * 0.70));
     return { name, team, avg, handicap };
   }).filter(p =>
-    p.name &&
-    p.avg > 0 &&
-    !/ghost\s*team/i.test(p.name)
+    p.name && p.avg > 0 && !/ghost\s*team/i.test(p.name)
   );
 }
 
-// ── Team Tab CSV ────────────────────────────────────────────────────────────
-
+// ── Team Tab CSV ──────────────────────────────────────────────────────────────
 export function parseTeamTab(csv: string): TeamData | null {
   const rows = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
-                  .map(r => parseCSVLine(r));
+    .map(r => parseCSVLine(r));
   if (rows.length < 2) return null;
 
-  // Find header row — col[1] = 'Week'
+  // Find header row — col[1] = 'Week' or 'Wk.' (some teams use abbreviated form)
   let hdrIdx = -1;
   for (let i = 0; i < Math.min(8, rows.length); i++) {
-    if ((rows[i][1] || '').trim().toLowerCase() === 'week') { hdrIdx = i; break; }
+    if (/^(week|wk\.?)$/i.test((rows[i][1] || '').trim())) {
+      hdrIdx = i;
+      break;
+    }
   }
   if (hdrIdx < 0) return null;
 
   const hdr = rows[hdrIdx];
+
+  // Separate regular player columns from sub columns
   const playerCols: { name: string; col: number }[] = [];
+  const subCols: { name: string; col: number }[] = [];
   for (let c = 6; c < hdr.length; c++) {
     const h = (hdr[c] || '').trim();
-    if (!h || /^sub\s*\d/i.test(h) || /^w\/l/i.test(h)) break;
-    playerCols.push({ name: h, col: c });
+    if (!h || /^w\/l/i.test(h)) break;
+    if (/^sub\s*\d/i.test(h)) {
+      subCols.push({ name: h, col: c });
+    } else {
+      playerCols.push({ name: h, col: c });
+    }
   }
 
   const wltCol = hdr.findIndex((h, i) => i > 5 && /^w\/l/i.test((h || '').trim()));
@@ -84,10 +89,16 @@ export function parseTeamTab(csv: string): TeamData | null {
   const gameRows: GameRow[] = [];
   let statsStart = -1;
   let lastWeekNum = 0;
+
   for (let i = hdrIdx + 1; i < rows.length; i++) {
     const row = rows[i];
     const label5 = (row[5] || '').trim();
-    if (/^(total|average|handicap|high|std\s*dev)/i.test(label5)) { statsStart = i; break; }
+
+    if (/^(total|average|handicap|high|std\s*dev)/i.test(label5)) {
+      statsStart = i;
+      break;
+    }
+
     let wk = parseInt(row[1]);
     if (isNaN(wk)) {
       if (lastWeekNum > 0 && label5 && !/^(bye|open|byes?)\s*$/i.test(label5)) {
@@ -98,23 +109,35 @@ export function parseTeamTab(csv: string): TeamData | null {
     } else {
       lastWeekNum = wk;
     }
+
     const scores: Record<string, number | null> = {};
+
+    // Regular player scores
     playerCols.forEach(p => {
       const v = parseInt((row[p.col] || '').replace(/[^0-9]/g, ''));
       scores[p.name] = isNaN(v) || v === 0 ? null : v;
     });
+
+    // Sub scores — only include if they have a value > 0
+    subCols.forEach(p => {
+      const v = parseInt((row[p.col] || '').replace(/[^0-9]/g, ''));
+      if (!isNaN(v) && v > 0) {
+        scores[p.name] = v;
+      }
+    });
+
     gameRows.push({
-      weekNum:  wk,
-      date:     (row[2] || '').trim(),
-      time:     (row[3] || '').trim(),
-      lane:     (row[4] || '').trim(),
+      weekNum: wk,
+      date: (row[2] || '').trim(),
+      time: (row[3] || '').trim(),
+      lane: (row[4] || '').trim(),
       opponent: label5,
       scores,
       wlt: wltCol >= 0 ? (row[wltCol] || '').trim() : '',
     });
   }
 
-  // Parse stats section
+  // Parse stats section (only for regular players, not subs)
   const statRows: Record<string, Record<string, number | null>> = {};
   if (statsStart >= 0) {
     for (let i = statsStart; i < rows.length; i++) {
@@ -132,13 +155,13 @@ export function parseTeamTab(csv: string): TeamData | null {
   }
 
   const players: TeamPlayer[] = playerCols.map(p => ({
-    name:        p.name,
-    avg:         statRows['Average']?.[p.name]  ?? 0,
-    handicap:    statRows['Handicap']?.[p.name] ?? 0,
-    high:        statRows['High']?.[p.name]     ?? 0,
-    stdDev:      statRows['Std Dev']?.[p.name]  ?? 0,
+    name: p.name,
+    avg: statRows['Average']?.[p.name] ?? 0,
+    handicap: statRows['Handicap']?.[p.name] ?? 0,
+    high: statRows['High']?.[p.name] ?? 0,
+    stdDev: statRows['Std Dev']?.[p.name] ?? 0,
     gamesPlayed: statRows['# Played']?.[p.name] ?? 0,
-    prevAvg:     statRows['Previous Average']?.[p.name] ?? 0,
+    prevAvg: statRows['Previous Average']?.[p.name] ?? 0,
   }));
 
   return {
@@ -148,31 +171,25 @@ export function parseTeamTab(csv: string): TeamData | null {
   };
 }
 
-// ── Handicap Sheet Overlay ──────────────────────────────────────────────────
-
+// ── Handicap Sheet Overlay ────────────────────────────────────────────────────
 export function applyHandicapSheet(csv: string, roster: Player[]): number {
   const lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
   let count = 0;
-
   lines.forEach(line => {
     if (!line.trim()) return;
     const parts = parseCSVLine(line);
     for (let col = 0; col + 1 < parts.length; col += 3) {
       const name = (parts[col] || '').trim();
-      const hcp  = parseInt((parts[col + 1] || '').trim(), 10);
+      const hcp = parseInt((parts[col + 1] || '').trim(), 10);
       if (!name || isNaN(hcp)) continue;
       const player = roster.find(p => p.name.toLowerCase() === name.toLowerCase());
-      if (player) {
-        player.handicap = hcp;
-        count++;
-      }
+      if (player) { player.handicap = hcp; count++; }
     }
   });
   return count;
 }
 
-// ── Standings CSV ───────────────────────────────────────────────────────────
-
+// ── Standings CSV ─────────────────────────────────────────────────────────────
 export function parseStandingsCSV(csv: string): { avgMap: Record<string, number>; entries: StandingsEntry[] } {
   const lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.trim());
   if (lines.length < 2) return { avgMap: {}, entries: [] };
@@ -221,8 +238,7 @@ export function parseStandingsCSV(csv: string): { avgMap: Record<string, number>
   return { avgMap, entries };
 }
 
-// ── Schedule CSV — Horizontal (live Google Sheet) ───────────────────────────
-
+// ── Schedule CSV — Horizontal (live Google Sheet) ─────────────────────────────
 function parseScheduleCSVHorizontal(csv: string): WeekSchedule[] {
   const rows = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
   const datePattern = /^\d{1,2}-[A-Za-z]{3}$/;
@@ -232,7 +248,11 @@ function parseScheduleCSVHorizontal(csv: string): WeekSchedule[] {
   let dateRow: string[] | null = null;
   for (let i = 0; i < rows.length; i++) {
     const cells = parseCSVLine(rows[i]).map(c => c.trim());
-    if (cells.some(c => datePattern.test(c))) { dateRow = cells; dateRowIdx = i; break; }
+    if (cells.some(c => datePattern.test(c))) {
+      dateRow = cells;
+      dateRowIdx = i;
+      break;
+    }
   }
   if (!dateRow) return [];
 
@@ -250,6 +270,7 @@ function parseScheduleCSVHorizontal(csv: string): WeekSchedule[] {
     for (let i = dateRowIdx + 1; i < rows.length; i++) {
       const cells = parseCSVLine(rows[i]).map(c => c.trim());
       const label = cells[laneCol] || '';
+
       if (/^\d{1,2}:\d{2}$/.test(label)) {
         currentSlot = { time: label, lanes: [] };
         week.slots.push(currentSlot);
@@ -264,8 +285,7 @@ function parseScheduleCSVHorizontal(csv: string): WeekSchedule[] {
   return weeks;
 }
 
-// ── Schedule CSV — Vertical (fallback) ──────────────────────────────────────
-
+// ── Schedule CSV — Vertical (fallback) ────────────────────────────────────────
 function parseScheduleCSVVertical(csv: string): WeekSchedule[] {
   const lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
   const weeks: WeekSchedule[] = [];
@@ -275,6 +295,7 @@ function parseScheduleCSVVertical(csv: string): WeekSchedule[] {
   for (const line of lines) {
     if (!line.trim()) continue;
     const parts = line.split(',').map(p => p.trim());
+
     if (parts[0].toLowerCase().startsWith('week')) {
       currentWeek = { week: parts[0], date: (parts[1] || '').trim(), slots: [] };
       weeks.push(currentWeek);
@@ -295,5 +316,7 @@ export function parseScheduleCSV(csv: string): WeekSchedule[] {
   const isHorizontal = csv.split('\n').slice(0, 10).some(line =>
     line.split(',').some(cell => datePattern.test(cell.trim()))
   );
-  return isHorizontal ? parseScheduleCSVHorizontal(csv) : parseScheduleCSVVertical(csv);
+  return isHorizontal
+    ? parseScheduleCSVHorizontal(csv)
+    : parseScheduleCSVVertical(csv);
 }
