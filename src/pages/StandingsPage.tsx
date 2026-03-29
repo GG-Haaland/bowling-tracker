@@ -355,7 +355,7 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
                     {/* Place column */}
                     {presentCols.some(c => c.key === 'place') && <col style={{ width: '2em' }} />}
                     {/* Team name column — compact, long names wrap */}
-                    <col style={{ width: '8.5em' }} />
+                    <col style={{ width: '6.5em' }} />
                     {/* Stat columns */}
                     {presentCols.filter(c => c.key !== 'place').map(c => (
                       <col key={c.key} style={{ width: c.width }} />

@@ -206,7 +206,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                 <table style={{ minWidth: '32em', borderCollapse: 'separate', borderSpacing: 0, tableLayout: 'auto' }}>
                   <colgroup>
                     <col style={{ width: '2em' }} />
-                    <col style={{ width: '7.5em' }} />
+                    <col style={{ width: '6.5em' }} />
                     <col style={{ width: '3.5em' }} />
                     <col style={{ width: '3.2em' }} />
                     <col style={{ width: '2.6em' }} />
