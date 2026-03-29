@@ -3,9 +3,10 @@ import { TEAM_NAMES, getMostRecentWednesday, TOTAL_WEEKS } from '@/lib/constants
 import { useSheetData } from '@/hooks/useSheetData';
 import IntroScreen from '@/components/IntroScreen';
 import HandicapPage from '@/components/HandicapPage';
+import LeaderboardPage from '@/pages/LeaderboardPage';
 import DashboardPage from '@/pages/DashboardPage';
 
-type View = 'intro' | 'dashboard' | 'handicap';
+type View = 'intro' | 'dashboard' | 'handicap' | 'leaderboard';
 
 export default function App() {
   const [view, setView] = useState<View>('intro');
@@ -22,8 +23,10 @@ export default function App() {
   // After data loads, find the current week
   useEffect(() => {
     if (sheetData.loading) return;
+
     const today = getMostRecentWednesday();
     let matchIdx = -1;
+
     // Try weekDateMap
     for (let w = 1; w <= TOTAL_WEEKS; w++) {
       const d = sheetData.weekDateMap[w];
@@ -41,6 +44,7 @@ export default function App() {
       }
     }
     if (matchIdx === -1) matchIdx = 0;
+
     setCurrentWeekIndex(matchIdx);
     setSelectedDate(sheetData.weekDateMap[matchIdx + 1] || today);
   }, [sheetData.loading, sheetData.weekDateMap]);
@@ -83,6 +87,14 @@ export default function App() {
     setView('dashboard');
   }, []);
 
+  const handleNavigateLeaderboard = useCallback(() => {
+    setView('leaderboard');
+  }, []);
+
+  const handleBackFromLeaderboard = useCallback(() => {
+    setView('dashboard');
+  }, []);
+
   if (view === 'intro') {
     return (
       <IntroScreen
@@ -108,6 +120,14 @@ export default function App() {
     );
   }
 
+  if (view === 'leaderboard') {
+    return (
+      <LeaderboardPage
+        onBack={handleBackFromLeaderboard}
+      />
+    );
+  }
+
   return (
     <DashboardPage
       sheetData={sheetData}
@@ -117,6 +137,7 @@ export default function App() {
       onChangeWeek={handleChangeWeek}
       onChangeTeamByName={handleChangeTeamByName}
       onNavigateHandicap={handleNavigateHandicap}
+      onNavigateLeaderboard={handleNavigateLeaderboard}
     />
   );
 }

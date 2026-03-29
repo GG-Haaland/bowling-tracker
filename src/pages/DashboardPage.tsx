@@ -23,6 +23,7 @@ interface DashboardPageProps {
   onChangeWeek: (delta: number) => void;
   onChangeTeamByName: (teamName: string) => void;
   onNavigateHandicap: () => void;
+  onNavigateLeaderboard: () => void;
 }
 
 export default function DashboardPage({
@@ -33,6 +34,7 @@ export default function DashboardPage({
   onChangeWeek,
   onChangeTeamByName,
   onNavigateHandicap,
+  onNavigateLeaderboard,
 }: DashboardPageProps) {
   const weekNum = currentWeekIndex + 1;
   const schedule = sheetData.allWeeks[currentWeekIndex] || { week: '', date: '', slots: [] };
@@ -88,6 +90,30 @@ export default function DashboardPage({
     setSelectedPlayersB([]);
     setMatchupSelected(false);
   }, [onChangeTeamByName]);
+
+  /* ─────────────────────────────────────────────
+     TOP NAV BAR
+     ───────────────────────────────────────────── */
+  const navBar = (
+    <div style={{
+      display: 'flex',
+      gap: '0.5em',
+      marginBottom: '0.3em',
+    }}>
+      <button
+        className="contact-btn"
+        onClick={onNavigateLeaderboard}
+        style={{
+          flex: 1,
+          padding: '0.55em 0.8em',
+          fontSize: '0.82em',
+          letterSpacing: '0.1em',
+        }}
+      >
+        LEADERBOARD
+      </button>
+    </div>
+  );
 
   /* ─────────────────────────────────────────────
      SHARED: Your Team profile card
@@ -156,13 +182,16 @@ export default function DashboardPage({
 
   /* ═════════════════════════════════════════════
      FUTURE WEEK LAYOUT
-     YOUR TEAM → WEEK SELECTOR → HANDICAP EDGE →
+     NAV BAR → YOUR TEAM → WEEK SELECTOR → HANDICAP EDGE →
      MATCHUP PICKER → PLAYER CARDS → HCP CALCULATOR → DATA STATUS
      ═════════════════════════════════════════════ */
   if (!isPastWeek) {
     return (
       <div className="dashboard dot-bg" style={{ opacity: 1 }}>
         <div className="dashboard-stack">
+          {/* 0. NAV BAR */}
+          {navBar}
+
           {/* 1. YOUR TEAM */}
           {yourTeamCard}
 
@@ -230,12 +259,15 @@ export default function DashboardPage({
 
   /* ═════════════════════════════════════════════
      PAST WEEK LAYOUT
-     YOUR TEAM → WEEK SELECTOR → TOP TEN BOWLERS →
+     NAV BAR → YOUR TEAM → WEEK SELECTOR → TOP TEN BOWLERS →
      MATCHUP PICKER → WEEK RESULTS → DATA STATUS
      ═════════════════════════════════════════════ */
   return (
     <div className="dashboard dot-bg" style={{ opacity: 1 }}>
       <div className="dashboard-stack">
+        {/* 0. NAV BAR */}
+        {navBar}
+
         {/* 1. YOUR TEAM */}
         {yourTeamCard}
 
