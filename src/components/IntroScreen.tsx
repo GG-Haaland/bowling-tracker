@@ -32,7 +32,6 @@ export default function IntroScreen({
       {/* Three.js dotted wave background replaces the old dot-bg */}
       <DottedSurface />
 
-      <div className="intro-chain" />
       <div className="intro-badge">
         <div className="intro-screws">
           <ScrewIcon />
@@ -45,10 +44,12 @@ export default function IntroScreen({
             src="/apple-touch-icon.png"
             alt="A Bowling Club"
             style={{
-              width: '120px',
-              height: '120px',
+              width: '180px',
+              height: '180px',
               display: 'block',
-              margin: '0 auto 0.6em',
+              margin: '-60px auto 0.4em',
+              position: 'relative',
+              zIndex: 10,
             }}
           />
           <p>

@@ -1,3 +1,4 @@
+@import "tailwindcss";
 /* ─── CSS VARIABLES ─────────────────────────────────── */
 :root {
   --dark-black:   #1c1c25;
@@ -730,7 +731,30 @@ body {
   padding: 0.7em 0.5em;
   font-size: 0.95em;
 }
-
+.intro-badge {
+  animation: none;
+}
+.intro-chain {
+  animation: none;
+}
+.intro-badge {
+  background: #8a8a8a;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.03) 0px,
+      rgba(255,255,255,0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0,0,0,0.04) 0px,
+      rgba(0,0,0,0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
 /* ─── 13. HANDICAP PAGE TABLE ────────────────────────
    Score table was very tiny at 0.78em of 13px.
    Now 0.78em of 16px = ~12.5px which is better.
