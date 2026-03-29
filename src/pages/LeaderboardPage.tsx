@@ -261,14 +261,12 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                           <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle', color: rankColor, fontWeight: 900, fontSize: '1em' }}>
                             {i + 1}
                           </td>
-                          <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle', overflow: 'hidden' }}>
+                          <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle' }}>
                             <div style={{
                               color: 'var(--white-smoke)',
                               fontWeight: 700,
                               fontSize: '0.95em',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
+                              lineHeight: 1.2,
                             }}>
                               {p.name}
                             </div>
@@ -277,6 +275,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
                               fontSize: '0.7em',
                               textTransform: 'uppercase',
                               letterSpacing: '0.06em',
+                              lineHeight: 1.2,
                             }}>
                               {p.team}
                             </div>

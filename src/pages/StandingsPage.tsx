@@ -419,14 +419,12 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
                           )}
 
                           {/* Team name */}
-                          <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle', overflow: 'hidden' }}>
+                          <td style={{ padding: '0.55em 0.3em', verticalAlign: 'middle' }}>
                             <div style={{
                               color: highlighted ? 'var(--yellow)' : 'var(--white-smoke)',
                               fontWeight: highlighted ? 900 : 700,
                               fontSize: '0.92em',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
+                              lineHeight: 1.2,
                             }}>
                               {t.team}
                             </div>
