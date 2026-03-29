@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { TEAM_NAMES, formatBowlingDate } from '@/lib/constants';
+import { DottedSurface } from '@/components/ui/dotted-surface';
 
 interface IntroScreenProps {
   selectedTeamIndex: number;
@@ -12,17 +13,25 @@ interface IntroScreenProps {
 }
 
 export default function IntroScreen({
-  selectedTeamIndex, selectedDate, currentWeek, loading, onChangeTeam, onChangeWeek, onEnter,
+  selectedTeamIndex,
+  selectedDate,
+  currentWeek,
+  loading,
+  onChangeTeam,
+  onChangeWeek,
+  onEnter,
 }: IntroScreenProps) {
   const teamName = TEAM_NAMES[selectedTeamIndex];
-
   const powerBtnStyle: CSSProperties = {
     opacity: loading ? 0.4 : 1,
     pointerEvents: loading ? 'none' : 'auto',
   };
 
   return (
-    <div className="intro dot-bg">
+    <div className="intro">
+      {/* Three.js dotted wave background replaces the old dot-bg */}
+      <DottedSurface />
+
       <div className="intro-chain" />
       <div className="intro-badge">
         <div className="intro-screws">
@@ -30,19 +39,50 @@ export default function IntroScreen({
           <div className="dot-grid" />
           <ScrewIcon />
         </div>
+
         <div className="intro-screen-box">
-          <h2>WEDNESDAY<br />BOWLING<br />LEAGUE</h2>
-          <p>{loading ? 'Loading data...' : 'Select your team and press the button to enter the tracker.'}</p>
+          <img
+            src="/apple-touch-icon.png"
+            alt="A Bowling Club"
+            style={{
+              width: '120px',
+              height: '120px',
+              display: 'block',
+              margin: '0 auto 0.6em',
+            }}
+          />
+          <p>
+            {loading
+              ? 'Loading data...'
+              : 'Select your team and week'}
+          </p>
         </div>
 
         {/* Team selector */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.7em' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '0.7em',
+        }}>
           <button className="week-nav-btn" onClick={() => onChangeTeam(-1)} style={{ fontSize: '0.75em' }}>&#9664;</button>
           <div style={{ textAlign: 'center', flex: 1 }}>
-            <div style={{ fontSize: '0.72em', fontWeight: 700, letterSpacing: '0.16em', color: 'var(--yellow)', textTransform: 'uppercase' }}>
+            <div style={{
+              fontSize: '0.72em',
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              color: 'var(--yellow)',
+              textTransform: 'uppercase',
+            }}>
               YOUR TEAM
             </div>
-            <div style={{ fontSize: '0.85em', fontWeight: 900, color: 'var(--white-smoke)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            <div style={{
+              fontSize: '0.85em',
+              fontWeight: 900,
+              color: 'var(--white-smoke)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+            }}>
               {teamName.toUpperCase()}
             </div>
           </div>
@@ -50,13 +90,28 @@ export default function IntroScreen({
         </div>
 
         {/* Week / Date selector */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.9em' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '0.9em',
+        }}>
           <button className="week-nav-btn" onClick={() => onChangeWeek(-1)} style={{ fontSize: '0.75em' }}>&#9664;</button>
           <div style={{ textAlign: 'center', flex: 1 }}>
-            <div style={{ fontSize: '0.72em', fontWeight: 700, letterSpacing: '0.16em', color: 'var(--yellow)' }}>
+            <div style={{
+              fontSize: '0.72em',
+              fontWeight: 700,
+              letterSpacing: '0.16em',
+              color: 'var(--yellow)',
+            }}>
               WEEK {currentWeek}
             </div>
-            <div style={{ fontSize: '0.95em', fontWeight: 900, color: 'var(--white-smoke)', letterSpacing: '0.06em' }}>
+            <div style={{
+              fontSize: '0.95em',
+              fontWeight: 900,
+              color: 'var(--white-smoke)',
+              letterSpacing: '0.06em',
+            }}>
               {formatBowlingDate(selectedDate)}
             </div>
           </div>
