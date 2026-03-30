@@ -1,7 +1,6 @@
 // ── Google Sheets Configuration ──────────────────────────────────────────────
-
 export const SHEET_BASE =
-'https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPt3d_kWokuuI0tCFpB1GNChdyfOa2iWdw7wfjCdCRR56swjh93UL09_ZG5moi1z3ot79SiDbULwQ/pub?single=true&output=csv';
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vSYPt3d_kWokuuI0tCFpB1GNChdyfOa2iWdw7wfjCdCRR56swjh93UL09_ZG5moi1z3ot79SiDbULwQ/pub?single=true&output=csv';
 
 export const SHEET_URLS = {
   roster:    SHEET_BASE + '&gid=61',
@@ -10,25 +9,24 @@ export const SHEET_URLS = {
   standings: SHEET_BASE + '&gid=0',
 } as const;
 
-// ── Team GIDs (Google Sheet tab IDs) ────────────────────────────────────────
-
+// ── Team GIDs (Google Sheet tab IDs) ──────────────────────────────────────────
 export const TEAM_GIDS: Record<string, number> = {
-  'Gutter & Sons':                        78,
-  'Captain Ryan and his TBDs':            66,
-  "Dolla Dolla Bowl Y'all":               49,
-  'Easy Pickup 2':                        76,
-  'Ghost Team':                           68,
-  'Glory Bowls':                          70,
-  'LIC My Balls':                         75,
-  'Lickety Splitz':                       69,
-  "Michael BOWLton's Greatest Splits":    74,
-  'Midwest Vacuum':                       73,
-  'Ozzie Guillen':                        71,
-  'Pin Chitters':                         64,
-  'Singles Team':                         67,
-  'Slice & Dice':                         72,
-  'Stranger Pins':                        65,
-  'The Dude':                             77,
+  'Gutter & Sons':                     78,
+  'Captain Ryan and his TBDs':         66,
+  "Dolla Dolla Bowl Y'all":            49,
+  'Easy Pickup 2':                     76,
+  'Ghost Team':                        68,
+  'Glory Bowls':                       70,
+  'LIC My Balls':                      75,
+  'Lickety Splitz':                    69,
+  "Michael BOWLton's Greatest Splits": 74,
+  'Midwest Vacuum':                    73,
+  'Ozzie Guillen':                     71,
+  'Pin Chitters':                      64,
+  'Singles Team':                      67,
+  'Slice & Dice':                      72,
+  'Stranger Pins':                     65,
+  'The Dude':                          77,
 };
 
 // Gutter & Sons first, rest alphabetical
@@ -37,14 +35,12 @@ export const TEAM_NAMES: string[] = [
   ...Object.keys(TEAM_GIDS).filter(t => t !== 'Gutter & Sons').sort(),
 ];
 
-// ── Season dates ────────────────────────────────────────────────────────────
-
+// ── Season dates ──────────────────────────────────────────────────────────────
 export const SEASON_START = new Date(2026, 0, 21); // Jan 21 2026 = Week 1
-export const TOTAL_WEEKS = 12;
-export const MAX_BOWLERS = 6;
+export const TOTAL_WEEKS  = 12;
+export const MAX_BOWLERS  = 6;
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
-
+// ── Helpers ───────────────────────────────────────────────────────────────────
 export function normStr(s: string): string {
   return (s || '').toLowerCase().trim();
 }
@@ -53,8 +49,7 @@ export function normTeam(t: string): string {
   return normStr(t);
 }
 
-// ── Date helpers ────────────────────────────────────────────────────────────
-
+// ── Date helpers ──────────────────────────────────────────────────────────────
 const MONTH_MAP: Record<string, number> = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
   jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11,
@@ -76,12 +71,18 @@ export function formatBowlingDate(date: Date): string {
   return `${MONTH_NAMES[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
 }
 
+/**
+ * Returns this week's Wednesday.
+ * Before Wed (Sun/Mon/Tue) → upcoming Wednesday.
+ * On Wed → today.
+ * After Wed (Thu/Fri/Sat) → most recent Wednesday.
+ */
 export function getMostRecentWednesday(): Date {
   const today = new Date();
-  const day = today.getDay();
-  const daysSinceWed = (day - 3 + 7) % 7;
+  const day = today.getDay(); // 0=Sun … 6=Sat
+  const offset = 3 - day;     // +forward for Sun/Mon/Tue, 0 for Wed, -back for Thu/Fri/Sat
   const wed = new Date(today);
-  wed.setDate(today.getDate() - daysSinceWed);
+  wed.setDate(today.getDate() + offset);
   wed.setHours(0, 0, 0, 0);
   return wed;
 }
