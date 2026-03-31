@@ -87,6 +87,24 @@ export function getMostRecentWednesday(): Date {
   return wed;
 }
 
+/**
+ * Returns true when the user is viewing the current bowling week
+ * AND today is Mon/Tue/Wed (bowling night is upcoming or today).
+ * Used to display "THIS WEEK" instead of "WEEK X".
+ */
+export function isCurrentBowlingWeek(selectedDate: Date): boolean {
+  const today = new Date();
+  const day = today.getDay(); // 0=Sun … 6=Sat
+  // Only show "THIS WEEK" on Mon(1), Tue(2), Wed(3)
+  if (day < 1 || day > 3) return false;
+  const thisWed = getMostRecentWednesday();
+  return (
+    selectedDate.getFullYear() === thisWed.getFullYear() &&
+    selectedDate.getMonth() === thisWed.getMonth() &&
+    selectedDate.getDate() === thisWed.getDate()
+  );
+}
+
 /** Pre-seed weekDateMap with 12 weeks starting from SEASON_START */
 export function buildInitialWeekDateMap(): Record<number, Date> {
   const map: Record<number, Date> = {};

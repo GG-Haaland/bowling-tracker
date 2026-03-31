@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { TEAM_NAMES, formatBowlingDate } from '@/lib/constants';
+import { TEAM_NAMES, formatBowlingDate, isCurrentBowlingWeek } from '@/lib/constants';
 import { DottedSurface } from '@/components/ui/dotted-surface';
 
 interface IntroScreenProps {
@@ -22,6 +22,8 @@ export default function IntroScreen({
   onEnter,
 }: IntroScreenProps) {
   const teamName = TEAM_NAMES[selectedTeamIndex];
+  const weekLabel = isCurrentBowlingWeek(selectedDate) ? 'THIS WEEK' : `WEEK ${currentWeek}`;
+
   const powerBtnStyle: CSSProperties = {
     opacity: loading ? 0.4 : 1,
     pointerEvents: loading ? 'none' : 'auto',
@@ -53,9 +55,7 @@ export default function IntroScreen({
             }}
           />
           <p>
-            {loading
-              ? 'Loading data...'
-              : 'Select your team and week'}
+            {loading ? 'Loading data...' : 'Select your team and week'}
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export default function IntroScreen({
               letterSpacing: '0.16em',
               color: 'var(--yellow)',
             }}>
-              WEEK {currentWeek}
+              {weekLabel}
             </div>
             <div style={{
               fontSize: '0.95em',
