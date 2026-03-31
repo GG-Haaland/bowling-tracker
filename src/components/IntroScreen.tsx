@@ -22,7 +22,8 @@ export default function IntroScreen({
   onEnter,
 }: IntroScreenProps) {
   const teamName = TEAM_NAMES[selectedTeamIndex];
-  const weekLabel = isCurrentBowlingWeek(selectedDate) ? 'THIS WEEK' : `WEEK ${currentWeek}`;
+  const isThisWeek = isCurrentBowlingWeek(selectedDate);
+  const weekLabel = isThisWeek ? 'THIS WEEK' : `WEEK ${currentWeek}`;
 
   const powerBtnStyle: CSSProperties = {
     opacity: loading ? 0.4 : 1,
@@ -74,6 +75,7 @@ export default function IntroScreen({
               letterSpacing: '0.16em',
               color: 'var(--yellow)',
               textTransform: 'uppercase',
+              textShadow: '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
             }}>
               YOUR TEAM
             </div>
@@ -104,6 +106,9 @@ export default function IntroScreen({
               fontWeight: 700,
               letterSpacing: '0.16em',
               color: 'var(--yellow)',
+              textShadow: isThisWeek
+                ? '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00, 0 0 10px rgba(255,204,0,1), 0 0 20px rgba(255,204,0,0.9), 0 0 40px rgba(255,204,0,0.7), 0 0 60px rgba(255,204,0,0.5), 0 0 80px rgba(255,204,0,0.3)'
+                : '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
             }}>
               {weekLabel}
             </div>
