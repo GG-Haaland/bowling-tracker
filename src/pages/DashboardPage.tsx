@@ -9,6 +9,7 @@ import WeekScorecard from '@/components/WeekScorecard';
 import TopBowls from '@/components/TopBowls';
 import DataStatusCard from '@/components/DataStatusCard';
 import WeekSelector from '@/components/WeekSelector';
+import EndGameCard from '@/components/EndGameCard';
 
 interface DashboardPageProps {
   sheetData: SheetState & {
@@ -277,8 +278,16 @@ export default function DashboardPage({
             teamBName={teamBName}
             roster={sheetData.roster}
           />
+          {/* 7. END GAME */}
+          <EndGameCard
+            selectedPlayersA={selectedPlayersA}
+            selectedPlayersB={selectedPlayersB}
+            teamAName={teamAName}
+            teamBName={teamBName}
+            roster={sheetData.roster}
+          />
 
-          {/* 7. DATA STATUS */}
+          {/* 8. DATA STATUS */}
           {dataStatus}
         </div>
       </div>
@@ -319,6 +328,7 @@ export default function DashboardPage({
           teamAvgMap={sheetData.teamAvgMap}
           loadTeamData={sheetData.loadTeamData}
           lookupTeamAvg={sheetData.lookupTeamAvg}
+          roster={sheetData.roster}
         />
 
         {/* 6. DATA STATUS */}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { TeamData, GameRow } from '@/lib/types';
+import type { TeamData, GameRow, Player } from '@/lib/types';
 import { normStr } from '@/lib/constants';
 
 interface WeekScorecardProps {
@@ -8,6 +8,7 @@ interface WeekScorecardProps {
   teamAvgMap: Record<string, number>;
   loadTeamData: (name: string) => Promise<TeamData | null>;
   lookupTeamAvg: (name: string) => number;
+  roster?: Player[];
 }
 
 export default function WeekScorecard({
@@ -16,6 +17,7 @@ export default function WeekScorecard({
   teamAvgMap,
   loadTeamData,
   lookupTeamAvg,
+  roster = [],
 }: WeekScorecardProps) {
   const [oppDatas, setOppDatas] = useState<(TeamData | null)[]>([]);
 
@@ -23,7 +25,6 @@ export default function WeekScorecard({
   const rows = teamWeeks.filter(w => w.weekNum === weekNum);
   const isPast = rows.some(r => Object.values(r.scores).some(v => v !== null));
 
-  // Load opponent data for past weeks
   useEffect(() => {
     if (!isPast || rows.length === 0) return;
     Promise.all(
@@ -54,7 +55,7 @@ export default function WeekScorecard({
             No data for this week yet
           </div>
         ) : isPast ? (
-          <PastWeekView rows={rows} teamData={teamData} oppDatas={oppDatas} />
+          <PastWeekView rows={rows} teamData={teamData} oppDatas={oppDatas} roster={roster} />
         ) : (
           <FutureWeekView rows={rows} teamData={teamData} lookupTeamAvg={lookupTeamAvg} />
         )}
@@ -63,23 +64,54 @@ export default function WeekScorecard({
   );
 }
 
-function PastWeekView({ rows, teamData, oppDatas }: {
+function buildDiffShadow(outlineColor: string, glowRgb: string): string {
+  const outline = [
+    '-1px -1px 0 ' + outlineColor,
+    '1px -1px 0 ' + outlineColor,
+    '-1px 1px 0 ' + outlineColor,
+    '1px 1px 0 ' + outlineColor,
+  ].join(', ');
+  const glow = [
+    '0 0 10px rgba(' + glowRgb + ',1)',
+    '0 0 20px rgba(' + glowRgb + ',0.8)',
+    '0 0 40px rgba(' + glowRgb + ',0.5)',
+    '0 0 60px rgba(' + glowRgb + ',0.3)',
+  ].join(', ');
+  return outline + ', ' + glow;
+}
+
+function PastWeekView({ rows, teamData, oppDatas, roster }: {
   rows: GameRow[];
   teamData: TeamData | null;
   oppDatas: (TeamData | null)[];
+  roster: Player[];
 }) {
   const myTeamName = teamData?.teamName ?? '';
+
+  const getHcp = (playerName: string): number => {
+    const found = roster.find(p => normStr(p.name) === normStr(playerName));
+    return found ? found.handicap : 0;
+  };
+
+  const calcTotals = (scores: [string, number][]) => {
+    let raw = 0;
+    let withHcp = 0;
+    for (const [name, score] of scores) {
+      raw += score;
+      withHcp += score + getHcp(name);
+    }
+    return { raw, withHcp };
+  };
 
   return (
     <>
       {rows.map((r, idx) => {
         const wltColor = r.wlt === 'W' ? 'var(--green)' : r.wlt === 'L' ? 'var(--red)' : 'var(--yellow)';
         const wltLabel = r.wlt === 'W' ? 'WIN' : r.wlt === 'L' ? 'LOSS' : r.wlt === 'T' ? 'TIE' : '';
-        const gameLabel = rows.length > 1 ? `GAME ${idx + 1} — ` : '';
+        const gameLabel = rows.length > 1 ? ('GAME ' + (idx + 1) + ' \u2014 ') : '';
 
-        const myScores = Object.entries(r.scores).filter(([, v]) => v !== null);
+        const myScores = Object.entries(r.scores).filter(([, v]) => v !== null) as [string, number][];
 
-        // Find opponent scores
         const oppData = oppDatas[idx];
         let oppScores: [string, number][] = [];
         if (oppData) {
@@ -91,6 +123,19 @@ function PastWeekView({ rows, teamData, oppDatas }: {
             oppScores = Object.entries(oppRow.scores).filter(([, v]) => v !== null) as [string, number][];
           }
         }
+
+        const myTotals = myScores.length > 0 ? calcTotals(myScores) : null;
+        const oppTotals = oppScores.length > 0 ? calcTotals(oppScores) : null;
+
+        const showDiff = myTotals != null && oppTotals != null;
+        const rawDiff = showDiff ? Math.abs(myTotals.withHcp - oppTotals.withHcp) : 0;
+        // Use the W/L/T from the sheet data as the source of truth for who won
+        const isWin = r.wlt === 'W';
+        const isTie = r.wlt === 'T' || (showDiff && rawDiff === 0);
+        const diffColor = isTie ? 'var(--yellow)' : isWin ? '#00e676' : '#ff4444';
+        const diffOutline = isTie ? '#8a6e00' : isWin ? '#005a1f' : '#6b0000';
+        const diffGlowRgb = isTie ? '255,204,0' : isWin ? '0,230,118' : '255,68,68';
+        const diffLabel = isTie ? 'TIE' : isWin ? ('+' + rawDiff) : ('-' + rawDiff);
 
         return (
           <div key={idx} style={{
@@ -105,7 +150,7 @@ function PastWeekView({ rows, teamData, oppDatas }: {
                 color: 'var(--light-blue)', fontSize: '0.78em',
                 letterSpacing: '0.1em', textTransform: 'uppercase'
               }}>
-                {gameLabel}{r.lane || ''}&ensp;{r.time || ''}
+                {gameLabel}{r.lane || ''}{'\u2002'}{r.time || ''}
               </span>
               {wltLabel && (
                 <span style={{
@@ -122,7 +167,7 @@ function PastWeekView({ rows, teamData, oppDatas }: {
               fontSize: '0.78em', color: 'var(--smoke)', marginBottom: '0.35em',
               letterSpacing: '0.05em'
             }}>
-              vs&ensp;<span style={{ color: 'var(--white-smoke)', fontWeight: 700 }}>{r.opponent}</span>
+              vs{'\u2002'}<span style={{ color: 'var(--white-smoke)', fontWeight: 700 }}>{r.opponent}</span>
             </div>
 
             {myScores.length > 0 && (
@@ -132,7 +177,7 @@ function PastWeekView({ rows, teamData, oppDatas }: {
                   letterSpacing: '0.08em', textTransform: 'uppercase',
                   marginBottom: '0.18em'
                 }}>YOUR TEAM</div>
-                <ScoreChips scores={myScores as [string, number][]} color="var(--yellow)" />
+                <ScoreChips scores={myScores} color="var(--yellow)" />
               </>
             )}
 
@@ -147,6 +192,78 @@ function PastWeekView({ rows, teamData, oppDatas }: {
                 </div>
                 <ScoreChips scores={oppScores} color="#ff7a5a" />
               </>
+            )}
+
+            {(myTotals || oppTotals) && (
+              <div style={{
+                marginTop: '0.6em', padding: '0.5em 0.6em', borderRadius: '0.35em',
+                background: 'rgba(0,0,0,0.25)', border: '1px solid var(--soft-black)',
+              }}>
+                <div style={{
+                  fontSize: '0.68em', color: 'var(--smoke)', letterSpacing: '0.1em',
+                  textTransform: 'uppercase', marginBottom: '0.4em', textAlign: 'center',
+                }}>
+                  TOTAL PINS
+                </div>
+
+                {myTotals && (
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    marginBottom: oppTotals ? '0.3em' : 0,
+                  }}>
+                    <span style={{
+                      fontSize: '0.75em', fontWeight: 700, color: 'var(--yellow)',
+                      letterSpacing: '0.05em',
+                    }}>
+                      YOUR TEAM
+                    </span>
+                    <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
+                        RAW{'\u00A0'}<strong style={{ color: 'var(--white-smoke)' }}>{myTotals.raw}</strong>
+                      </span>
+                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
+                        W/ HCP{'\u00A0'}<strong style={{ color: 'var(--yellow)', fontSize: '1.15em' }}>{myTotals.withHcp}</strong>
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {oppTotals && (
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  }}>
+                    <span style={{
+                      fontSize: '0.75em', fontWeight: 700, color: '#ff7a5a',
+                      letterSpacing: '0.05em',
+                    }}>
+                      {r.opponent.toUpperCase()}
+                    </span>
+                    <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
+                        RAW{'\u00A0'}<strong style={{ color: 'var(--white-smoke)' }}>{oppTotals.raw}</strong>
+                      </span>
+                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
+                        W/ HCP{'\u00A0'}<strong style={{ color: '#ff7a5a', fontSize: '1.15em' }}>{oppTotals.withHcp}</strong>
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {showDiff && (
+                  <div style={{
+                    textAlign: 'center', marginTop: '0.5em',
+                    paddingTop: '0.45em', borderTop: '1px solid var(--soft-black)',
+                  }}>
+                    <span style={{
+                      fontSize: '1.3em', fontWeight: 900,
+                      color: diffColor,
+                      textShadow: buildDiffShadow(diffOutline, diffGlowRgb),
+                    }}>
+                      {diffLabel}
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         );
@@ -167,7 +284,7 @@ function FutureWeekView({ rows, teamData, lookupTeamAvg }: {
       {rows.map((r, idx) => {
         const myAvg = lookupTeamAvg(myName);
         const oppAvg = lookupTeamAvg(r.opponent);
-        const gameLabel = rows.length > 1 ? `GAME ${idx + 1} — ` : '';
+        const gameLabel = rows.length > 1 ? ('GAME ' + (idx + 1) + ' \u2014 ') : '';
 
         return (
           <div key={idx} style={{
@@ -179,7 +296,7 @@ function FutureWeekView({ rows, teamData, lookupTeamAvg }: {
               letterSpacing: '0.1em', textTransform: 'uppercase',
               marginBottom: '0.28em'
             }}>
-              {gameLabel}{r.lane || ''}&ensp;{r.time || ''}
+              {gameLabel}{r.lane || ''}{'\u2002'}{r.time || ''}
             </div>
             <div style={{ fontSize: '0.88em', color: 'var(--smoke)', marginBottom: '0.45em' }}>
               vs <span style={{ color: 'var(--white-smoke)', fontWeight: 700 }}>{r.opponent}</span>
