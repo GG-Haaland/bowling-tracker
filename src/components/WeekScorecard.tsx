@@ -147,7 +147,7 @@ function PastWeekView({ rows, teamData, oppDatas, roster }: {
               marginBottom: '0.3em'
             }}>
               <span style={{
-                color: 'var(--light-blue)', fontSize: '0.78em',
+                color: 'var(--light-blue)', fontSize: '1.1em',
                 letterSpacing: '0.1em', textTransform: 'uppercase'
               }}>
                 {gameLabel}{r.lane || ''}{'\u2002'}{r.time || ''}
