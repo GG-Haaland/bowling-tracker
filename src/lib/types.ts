@@ -25,6 +25,10 @@ export interface GameRow {
   opponent: string;
   scores: Record<string, number | null>;
   wlt: string;
+  scratchTotal: number | null;
+  scratchOpp: number | null;
+  adjTotal: number | null;
+  adjOpp: number | null;
 }
 
 export interface TeamData {

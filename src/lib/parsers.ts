@@ -86,6 +86,36 @@ export function parseTeamTab(csv: string): TeamData | null {
 
   const wltCol = hdr.findIndex((h, i) => i > 5 && /^w\/l/i.test((h || '').trim()));
 
+  // Find Scratch Total/Opp and Adjusted Total/Opp columns after W/L
+  // The row above the header has "Scratch" and "Adjusted" spanning pairs of columns
+  // The header row has "Total" and "Opp" repeated under each
+  let scratchTotalCol = -1;
+  let scratchOppCol = -1;
+  let adjTotalCol = -1;
+  let adjOppCol = -1;
+
+  if (wltCol >= 0) {
+    // Look for "Total" and "Opp" columns after W/L
+    const totalOppCols: number[] = [];
+    for (let c = wltCol + 1; c < hdr.length; c++) {
+      const h = (hdr[c] || '').trim().toLowerCase().replace(/\.$/, '');
+      if (h === 'total' || h === 'opp') {
+        totalOppCols.push(c);
+      }
+    }
+    // Expected order: Scratch Total, Scratch Opp, Adjusted Total, Adjusted Opp
+    if (totalOppCols.length >= 4) {
+      scratchTotalCol = totalOppCols[0];
+      scratchOppCol = totalOppCols[1];
+      adjTotalCol = totalOppCols[2];
+      adjOppCol = totalOppCols[3];
+    } else if (totalOppCols.length >= 2) {
+      // If only 2 columns, assume they're the adjusted (with handicap) ones
+      adjTotalCol = totalOppCols[0];
+      adjOppCol = totalOppCols[1];
+    }
+  }
+
   const gameRows: GameRow[] = [];
   let statsStart = -1;
   let lastWeekNum = 0;
@@ -126,6 +156,12 @@ export function parseTeamTab(csv: string): TeamData | null {
       }
     });
 
+    const parseNum = (col: number) => {
+      if (col < 0) return null;
+      const v = parseInt((row[col] || '').replace(/[^0-9]/g, ''));
+      return isNaN(v) ? null : v;
+    };
+
     gameRows.push({
       weekNum: wk,
       date: (row[2] || '').trim(),
@@ -134,6 +170,10 @@ export function parseTeamTab(csv: string): TeamData | null {
       opponent: label5,
       scores,
       wlt: wltCol >= 0 ? (row[wltCol] || '').trim() : '',
+      scratchTotal: parseNum(scratchTotalCol),
+      scratchOpp: parseNum(scratchOppCol),
+      adjTotal: parseNum(adjTotalCol),
+      adjOpp: parseNum(adjOppCol),
     });
   }
 

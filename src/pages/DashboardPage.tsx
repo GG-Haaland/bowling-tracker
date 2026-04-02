@@ -328,7 +328,6 @@ export default function DashboardPage({
           teamAvgMap={sheetData.teamAvgMap}
           loadTeamData={sheetData.loadTeamData}
           lookupTeamAvg={sheetData.lookupTeamAvg}
-          roster={sheetData.roster}
         />
 
         {/* 6. DATA STATUS */}

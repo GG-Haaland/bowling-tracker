@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { TeamData, GameRow, Player } from '@/lib/types';
+import type { TeamData, GameRow } from '@/lib/types';
 import { normStr } from '@/lib/constants';
 
 interface WeekScorecardProps {
@@ -8,7 +8,6 @@ interface WeekScorecardProps {
   teamAvgMap: Record<string, number>;
   loadTeamData: (name: string) => Promise<TeamData | null>;
   lookupTeamAvg: (name: string) => number;
-  roster?: Player[];
 }
 
 export default function WeekScorecard({
@@ -17,7 +16,6 @@ export default function WeekScorecard({
   teamAvgMap,
   loadTeamData,
   lookupTeamAvg,
-  roster = [],
 }: WeekScorecardProps) {
   const [oppDatas, setOppDatas] = useState<(TeamData | null)[]>([]);
 
@@ -55,7 +53,7 @@ export default function WeekScorecard({
             No data for this week yet
           </div>
         ) : isPast ? (
-          <PastWeekView rows={rows} teamData={teamData} oppDatas={oppDatas} roster={roster} />
+          <PastWeekView rows={rows} teamData={teamData} oppDatas={oppDatas} />
         ) : (
           <FutureWeekView rows={rows} teamData={teamData} lookupTeamAvg={lookupTeamAvg} />
         )}
@@ -80,28 +78,12 @@ function buildDiffShadow(outlineColor: string, glowRgb: string): string {
   return outline + ', ' + glow;
 }
 
-function PastWeekView({ rows, teamData, oppDatas, roster }: {
+function PastWeekView({ rows, teamData, oppDatas }: {
   rows: GameRow[];
   teamData: TeamData | null;
   oppDatas: (TeamData | null)[];
-  roster: Player[];
 }) {
   const myTeamName = teamData?.teamName ?? '';
-
-  const getHcp = (playerName: string): number => {
-    const found = roster.find(p => normStr(p.name) === normStr(playerName));
-    return found ? found.handicap : 0;
-  };
-
-  const calcTotals = (scores: [string, number][]) => {
-    let raw = 0;
-    let withHcp = 0;
-    for (const [name, score] of scores) {
-      raw += score;
-      withHcp += score + getHcp(name);
-    }
-    return { raw, withHcp };
-  };
 
   return (
     <>
@@ -124,18 +106,24 @@ function PastWeekView({ rows, teamData, oppDatas, roster }: {
           }
         }
 
-        const myTotals = myScores.length > 0 ? calcTotals(myScores) : null;
-        const oppTotals = oppScores.length > 0 ? calcTotals(oppScores) : null;
+        const myRawTotal = myScores.reduce((sum, [, v]) => sum + v, 0);
+        const oppRawTotal = oppScores.reduce((sum, [, v]) => sum + v, 0);
 
-        const showDiff = myTotals != null && oppTotals != null;
-        const rawDiff = showDiff ? Math.abs(myTotals.withHcp - oppTotals.withHcp) : 0;
-        // Use the W/L/T from the sheet data as the source of truth for who won
+        // Handicap differential from sheet data (adjTotal - scratchTotal is team's handicap)
+        const myTeamHcp = (r.adjTotal != null && r.scratchTotal != null) ? r.adjTotal - r.scratchTotal : null;
+        const oppTeamHcp = (r.adjOpp != null && r.scratchOpp != null) ? r.adjOpp - r.scratchOpp : null;
+        // Positive = selected team has advantage, negative = opponent has advantage
+        const hcpEdge = (myTeamHcp != null && oppTeamHcp != null) ? myTeamHcp - oppTeamHcp : null;
+
+        // Point differential from adjusted (with handicap) totals
+        const showDiff = r.adjTotal != null && r.adjOpp != null;
+        const adjDiff = showDiff ? Math.abs(r.adjTotal! - r.adjOpp!) : 0;
         const isWin = r.wlt === 'W';
-        const isTie = r.wlt === 'T' || (showDiff && rawDiff === 0);
+        const isTie = r.wlt === 'T' || (showDiff && adjDiff === 0);
         const diffColor = isTie ? 'var(--yellow)' : isWin ? '#00e676' : '#ff4444';
         const diffOutline = isTie ? '#8a6e00' : isWin ? '#005a1f' : '#6b0000';
         const diffGlowRgb = isTie ? '255,204,0' : isWin ? '0,230,118' : '255,68,68';
-        const diffLabel = isTie ? 'TIE' : isWin ? ('+' + rawDiff) : ('-' + rawDiff);
+        const diffLabel = isTie ? 'TIE' : isWin ? ('+' + adjDiff) : ('-' + adjDiff);
 
         return (
           <div key={idx} style={{
@@ -175,8 +163,20 @@ function PastWeekView({ rows, teamData, oppDatas, roster }: {
                 <div style={{
                   fontSize: '0.7em', color: 'var(--soft-black)',
                   letterSpacing: '0.08em', textTransform: 'uppercase',
-                  marginBottom: '0.18em'
-                }}>YOUR TEAM</div>
+                  marginBottom: '0.18em', display: 'flex', alignItems: 'center', gap: '0.5em'
+                }}>
+                  <span>YOUR TEAM</span>
+                  {hcpEdge != null && hcpEdge > 0 && (
+                    <span style={{ color: 'var(--yellow)', fontWeight: 900 }}>
+                      +{hcpEdge}
+                    </span>
+                  )}
+                  {hcpEdge != null && hcpEdge < 0 && (
+                    <span style={{ color: 'var(--yellow)', fontWeight: 900 }}>
+                      {hcpEdge}
+                    </span>
+                  )}
+                </div>
                 <ScoreChips scores={myScores} color="var(--yellow)" />
               </>
             )}
@@ -194,7 +194,7 @@ function PastWeekView({ rows, teamData, oppDatas, roster }: {
               </>
             )}
 
-            {(myTotals || oppTotals) && (
+            {(myScores.length > 0 || oppScores.length > 0) && (
               <div style={{
                 marginTop: '0.6em', padding: '0.5em 0.6em', borderRadius: '0.35em',
                 background: 'rgba(0,0,0,0.25)', border: '1px solid var(--soft-black)',
@@ -203,13 +203,13 @@ function PastWeekView({ rows, teamData, oppDatas, roster }: {
                   fontSize: '0.68em', color: 'var(--smoke)', letterSpacing: '0.1em',
                   textTransform: 'uppercase', marginBottom: '0.4em', textAlign: 'center',
                 }}>
-                  TOTAL PINS
+                  TOTAL RAW PINS
                 </div>
 
-                {myTotals && (
+                {myScores.length > 0 && (
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    marginBottom: oppTotals ? '0.3em' : 0,
+                    marginBottom: oppScores.length > 0 ? '0.3em' : 0,
                   }}>
                     <span style={{
                       fontSize: '0.75em', fontWeight: 700, color: 'var(--yellow)',
@@ -217,18 +217,13 @@ function PastWeekView({ rows, teamData, oppDatas, roster }: {
                     }}>
                       YOUR TEAM
                     </span>
-                    <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
-                        RAW{'\u00A0'}<strong style={{ color: 'var(--white-smoke)' }}>{myTotals.raw}</strong>
-                      </span>
-                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
-                        W/ HCP{'\u00A0'}<strong style={{ color: 'var(--yellow)', fontSize: '1.15em' }}>{myTotals.withHcp}</strong>
-                      </span>
-                    </div>
+                    <span style={{ fontSize: '0.85em', fontWeight: 900, color: 'var(--yellow)' }}>
+                      {myRawTotal}
+                    </span>
                   </div>
                 )}
 
-                {oppTotals && (
+                {oppScores.length > 0 && (
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
@@ -238,14 +233,9 @@ function PastWeekView({ rows, teamData, oppDatas, roster }: {
                     }}>
                       {r.opponent.toUpperCase()}
                     </span>
-                    <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
-                        RAW{'\u00A0'}<strong style={{ color: 'var(--white-smoke)' }}>{oppTotals.raw}</strong>
-                      </span>
-                      <span style={{ fontSize: '0.75em', color: 'var(--smoke)' }}>
-                        W/ HCP{'\u00A0'}<strong style={{ color: '#ff7a5a', fontSize: '1.15em' }}>{oppTotals.withHcp}</strong>
-                      </span>
-                    </div>
+                    <span style={{ fontSize: '0.85em', fontWeight: 900, color: '#ff7a5a' }}>
+                      {oppRawTotal}
+                    </span>
                   </div>
                 )}
 
