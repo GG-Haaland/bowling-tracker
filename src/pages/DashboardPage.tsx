@@ -61,7 +61,7 @@ const POSTPONED_WEEK_KEYS = useMemo(() => new Set<string>([
   '2026-04-08', // Postponed to 2026-04-15
 ]), []);
 
-Determine if this week is in the past or future
+// Determine if this week is in the past or future
 const isPastWeek = useMemo(() => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
