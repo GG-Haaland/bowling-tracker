@@ -69,8 +69,8 @@ export default function DashboardPage({
   // sel.setHours(0, 0, 0, 0);
 
 // If this week was postponed, treat it as a future week regardless of date
-  const key = `${sel.getFullYear()}-${String(sel.getMonth() + 1).padStart(2, '0')}-${String(sel.getDate()).padStart(2, '0')}`;
-  if (POSTPONED_WEEK_KEYS.has(key)) return false;
+  // const key = `${sel.getFullYear()}-${String(sel.getMonth() + 1).padStart(2, '0')}-${String(sel.getDate()).padStart(2, '0')}`;
+  // if (POSTPONED_WEEK_KEYS.has(key)) return false;
 
   return sel < today; // today and future → future layout
 }, [selectedDate, POSTPONED_WEEK_KEYS]);
