@@ -54,27 +54,6 @@ export default function DashboardPage({
     return sel < today; // today and future → future layout
   }, [selectedDate]);
 
-  // Weeks that were postponed (didn't happen on their scheduled date)
-// These should always show the "future week" layout, even once their
-// original date has passed.
-//const POSTPONED_WEEK_KEYS = useMemo(() => new Set<string>([
-  // '2026-04-08', // Postponed to 2026-04-15
-// ]), []);
-
-// Determine if this week is in the past or future
-// const isPastWeek = useMemo(() => {
-  // const today = new Date();
-  // today.setHours(0, 0, 0, 0);
-  // const sel = new Date(selectedDate);
-  // sel.setHours(0, 0, 0, 0);
-
-// If this week was postponed, treat it as a future week regardless of date
-  // const key = `${sel.getFullYear()}-${String(sel.getMonth() + 1).padStart(2, '0')}-${String(sel.getDate()).padStart(2, '0')}`;
-  // if (POSTPONED_WEEK_KEYS.has(key)) return false;
-
-  return sel < today; // today and future → future layout
-}, [selectedDate, POSTPONED_WEEK_KEYS]);
-
   // Player selection state (only used in future layout)
   const [selectedPlayersA, setSelectedPlayersA] = useState<string[]>([]);
   const [selectedPlayersB, setSelectedPlayersB] = useState<string[]>([]);
