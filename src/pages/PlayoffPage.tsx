@@ -228,19 +228,19 @@ export default function PlayoffPage({ onBack }: PlayoffPageProps) {
                       teamName={teamB.name}
                       total={g1TotalB}
                     />
-                    {g1TotalA.allFilled && g1TotalB.allFilled && (
-                      <GameResult
-                        totalA={g1TotalA.withHcp}
-                        totalB={g1TotalB.withHcp}
-                        teamAName={teamA.name}
-                        teamBName={teamB.name}
-                        label="GAME 1 RESULT"
-                      />
-                    )}
+                    {/* Game 1 result shown in AFTER GAME 1 card below */}
                   </>
                 )}
               </div>
             </div>
+
+            {/* ── AFTER GAME 1 SUMMARY ── */}
+            <Game1Summary
+              teamAName={teamA.name}
+              teamBName={teamB.name}
+              g1A={g1TotalA}
+              g1B={g1TotalB}
+            />
 
             {/* ── GAME 2 ── */}
             <div className="card">
@@ -652,34 +652,139 @@ function HcpPreview({ teamAName, teamBName, hcpA, hcpB }: {
 
   return (
     <div style={{
-      padding: '0.6em', borderRadius: '0.4em', marginBottom: '0.7em',
-      background: 'rgba(0,0,0,0.25)', border: '1px solid var(--soft-black)',
+      padding: '0.7em', borderRadius: '0.4em', marginBottom: '0.7em',
+      background: 'var(--dark-black)', border: '1px solid var(--soft-black)',
     }}>
       <div style={{
-        fontSize: '0.68em', letterSpacing: '0.1em', color: 'var(--smoke)',
-        textAlign: 'center', marginBottom: '0.4em',
+        fontSize: '0.72em', letterSpacing: '0.12em', color: 'var(--yellow)',
+        textAlign: 'center', marginBottom: '0.6em', fontWeight: 900,
       }}>
         HANDICAP TOTALS
       </div>
+
+      {/* Team A row */}
       <div style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        padding: '0 0.3em',
+        padding: '0.45em 0.6em', borderRadius: '0.3em',
+        background: 'rgba(255,255,255,0.04)', marginBottom: '0.3em',
       }}>
         <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--red)' }}>
-          {teamAName.toUpperCase()}&nbsp;+{hcpA}
+          {teamAName.toUpperCase()}
         </span>
-        <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--light-blue)' }}>
-          +{hcpB}&nbsp;{teamBName.toUpperCase()}
+        <span style={{ fontSize: '1em', fontWeight: 900, color: 'var(--white-smoke)' }}>
+          +{hcpA}
         </span>
       </div>
+
+      {/* Team B row */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '0.45em 0.6em', borderRadius: '0.3em',
+        background: 'rgba(255,255,255,0.04)', marginBottom: '0.4em',
+      }}>
+        <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--light-blue)' }}>
+          {teamBName.toUpperCase()}
+        </span>
+        <span style={{ fontSize: '1em', fontWeight: 900, color: 'var(--white-smoke)' }}>
+          +{hcpB}
+        </span>
+      </div>
+
+      {/* Edge */}
       {diff > 0 && (
         <div style={{
-          textAlign: 'center', marginTop: '0.35em',
-          fontSize: '0.75em', fontWeight: 900, color: leaderColor,
+          textAlign: 'center', padding: '0.4em',
+          borderRadius: '0.3em', background: 'rgba(0,0,0,0.3)',
+          fontSize: '0.82em', fontWeight: 900, color: leaderColor,
         }}>
           {leader.toUpperCase()} +{diff} HCP EDGE
         </div>
       )}
+    </div>
+  );
+}
+
+function Game1Summary({ teamAName, teamBName, g1A, g1B }: {
+  teamAName: string;
+  teamBName: string;
+  g1A: { raw: number; withHcp: number; allFilled: boolean };
+  g1B: { raw: number; withHcp: number; allFilled: boolean };
+}) {
+  if (!g1A.allFilled || !g1B.allFilled) return null;
+
+  const diff = Math.abs(g1A.withHcp - g1B.withHcp);
+  const leader = g1A.withHcp > g1B.withHcp ? teamAName : teamBName;
+  const leaderColor = g1A.withHcp > g1B.withHcp ? 'var(--red)' : 'var(--light-blue)';
+  const isTie = diff === 0;
+
+  return (
+    <div className="card">
+      <div className="card__container">
+        <div className="card-titlebar">
+          <span className="card-titlebar__text">AFTER GAME 1</span>
+        </div>
+        <div style={{ padding: '0.3em 0' }}>
+          {/* Team A */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '0.5em 0.6em', borderRadius: '0.3em',
+            background: 'var(--dark-black)', marginBottom: '0.3em',
+          }}>
+            <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--red)' }}>
+              {teamAName.toUpperCase()}
+            </span>
+            <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.72em', color: 'var(--smoke)' }}>
+                RAW <strong style={{ color: 'var(--white-smoke)' }}>{g1A.raw}</strong>
+              </span>
+              <span style={{ fontSize: '0.72em', color: 'var(--smoke)' }}>
+                W/ HCP
+              </span>
+              <span style={{ fontSize: '1.05em', fontWeight: 900, color: 'var(--red)' }}>
+                {g1A.withHcp}
+              </span>
+            </div>
+          </div>
+
+          {/* Team B */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '0.5em 0.6em', borderRadius: '0.3em',
+            background: 'var(--dark-black)', marginBottom: '0.4em',
+          }}>
+            <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--light-blue)' }}>
+              {teamBName.toUpperCase()}
+            </span>
+            <div style={{ display: 'flex', gap: '1em', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.72em', color: 'var(--smoke)' }}>
+                RAW <strong style={{ color: 'var(--white-smoke)' }}>{g1B.raw}</strong>
+              </span>
+              <span style={{ fontSize: '0.72em', color: 'var(--smoke)' }}>
+                W/ HCP
+              </span>
+              <span style={{ fontSize: '1.05em', fontWeight: 900, color: 'var(--light-blue)' }}>
+                {g1B.withHcp}
+              </span>
+            </div>
+          </div>
+
+          {/* Leader */}
+          <div style={{
+            textAlign: 'center', padding: '0.5em', borderRadius: '0.3em',
+            background: 'rgba(0,0,0,0.3)',
+          }}>
+            {isTie ? (
+              <span style={{ fontSize: '0.9em', fontWeight: 900, color: 'var(--yellow)' }}>
+                TIED AFTER GAME 1
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.9em', fontWeight: 900, color: leaderColor }}>
+                {leader.toUpperCase()} LEADS BY {diff}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
