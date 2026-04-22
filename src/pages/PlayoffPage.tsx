@@ -73,6 +73,10 @@ export default function PlayoffPage({ onBack }: PlayoffPageProps) {
     return names.map(n => team.players.find(p => p.name === n)).filter(Boolean) as PlayoffPlayer[];
   };
 
+  // Compute handicap-only total for a set of players (before scores)
+  const hcpTotal = (players: PlayoffPlayer[]) =>
+    players.reduce((sum, p) => sum + p.handicap, 0);
+
   // Compute game totals
   const gameTotal = (players: PlayoffPlayer[], prefix: string) => {
     let raw = 0;
@@ -197,9 +201,15 @@ export default function PlayoffPage({ onBack }: PlayoffPageProps) {
                   teamName={teamB.name}
                 />
 
-                {/* Game 1 Score Inputs */}
+                {/* Handicap preview + Score Inputs */}
                 {game1A.length === 3 && game1B.length === 3 && (
                   <>
+                    <HcpPreview
+                      teamAName={teamA.name}
+                      teamBName={teamB.name}
+                      hcpA={hcpTotal(g1PlayersA)}
+                      hcpB={hcpTotal(g1PlayersB)}
+                    />
                     <ScoreInputBlock
                       players={g1PlayersA}
                       prefix="g1"
@@ -265,6 +275,12 @@ export default function PlayoffPage({ onBack }: PlayoffPageProps) {
 
                     {game2A.length === 3 && game2B.length === 3 && (
                       <>
+                        <HcpPreview
+                          teamAName={teamA.name}
+                          teamBName={teamB.name}
+                          hcpA={hcpTotal(g2PlayersA)}
+                          hcpB={hcpTotal(g2PlayersB)}
+                        />
                         <ScoreInputBlock
                           players={g2PlayersA}
                           prefix="g2"
@@ -556,6 +572,10 @@ function ScoreInputBlock({ players, prefix, scores, onSetScore, accentColor, tea
               {p.name}
             </span>
 
+            <span style={{ fontSize: '0.68em', color: 'var(--soft-black)', marginRight: '0.2em' }}>
+              AVG {p.avg > 0 ? Math.round(p.avg) : '—'}
+            </span>
+
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3em' }}>
               <span style={{ fontSize: '0.68em', color: 'var(--smoke)', letterSpacing: '0.05em' }}>SCORE</span>
               <input
@@ -565,6 +585,7 @@ function ScoreInputBlock({ players, prefix, scores, onSetScore, accentColor, tea
                 max={300}
                 value={s !== null && s !== undefined ? s : ''}
                 onChange={e => onSetScore(key, e.target.value)}
+                placeholder={p.avg > 0 ? String(Math.round(p.avg)) : ''}
                 style={{
                   width: '3.5em',
                   background: 'var(--soft-black)',
@@ -615,6 +636,50 @@ function ScoreInputBlock({ players, prefix, scores, onSetScore, accentColor, tea
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+function HcpPreview({ teamAName, teamBName, hcpA, hcpB }: {
+  teamAName: string;
+  teamBName: string;
+  hcpA: number;
+  hcpB: number;
+}) {
+  const diff = Math.abs(hcpA - hcpB);
+  const leader = hcpA > hcpB ? teamAName : teamBName;
+  const leaderColor = hcpA > hcpB ? 'var(--red)' : 'var(--light-blue)';
+
+  return (
+    <div style={{
+      padding: '0.6em', borderRadius: '0.4em', marginBottom: '0.7em',
+      background: 'rgba(0,0,0,0.25)', border: '1px solid var(--soft-black)',
+    }}>
+      <div style={{
+        fontSize: '0.68em', letterSpacing: '0.1em', color: 'var(--smoke)',
+        textAlign: 'center', marginBottom: '0.4em',
+      }}>
+        HANDICAP TOTALS
+      </div>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '0 0.3em',
+      }}>
+        <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--red)' }}>
+          {teamAName.toUpperCase()}&nbsp;+{hcpA}
+        </span>
+        <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--light-blue)' }}>
+          +{hcpB}&nbsp;{teamBName.toUpperCase()}
+        </span>
+      </div>
+      {diff > 0 && (
+        <div style={{
+          textAlign: 'center', marginTop: '0.35em',
+          fontSize: '0.75em', fontWeight: 900, color: leaderColor,
+        }}>
+          {leader.toUpperCase()} +{diff} HCP EDGE
+        </div>
+      )}
     </div>
   );
 }
