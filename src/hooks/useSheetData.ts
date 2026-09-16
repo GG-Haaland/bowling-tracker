@@ -58,13 +58,10 @@ export function useSheetData(selectedTeamName: string, season: SeasonConfig) {
 
     async function load() {
       try {
-        const defaultTeamGid = season.teamGids[selectedTeamName] || Object.values(season.teamGids)[0];
-
-        // Build fetch list
+        // Build fetch list — core sheets
         const fetches: Promise<string>[] = [
           fetch(season.sheetUrls.schedule).then(r => { if (!r.ok) throw new Error('schedule'); return r.text(); }),
           fetch(season.sheetUrls.standings).then(r => r.ok ? r.text() : '').catch(() => ''),
-          fetch(season.sheetBase + '&gid=' + defaultTeamGid).then(r => r.ok ? r.text() : '').catch(() => ''),
           // Always fetch leaderboard for player data
           fetch(season.sheetUrls.leaderboard).then(r => r.ok ? r.text() : '').catch(() => ''),
         ];
@@ -77,8 +74,8 @@ export function useSheetData(selectedTeamName: string, season: SeasonConfig) {
         const results = await Promise.all(fetches);
         if (cancelled) return;
 
-        const [scheduleCSV, standingsCSV, defaultTeamCSV, leaderboardCSV] = results;
-        const handicapCSV = season.sheetUrls.handicap ? results[4] || '' : '';
+        const [scheduleCSV, standingsCSV, leaderboardCSV] = results;
+        const handicapCSV = season.sheetUrls.handicap ? results[3] || '' : '';
 
         // Build roster from leaderboard (works for both Spring and Fall)
         let roster: Player[] = [];
@@ -104,37 +101,50 @@ export function useSheetData(selectedTeamName: string, season: SeasonConfig) {
           }
         });
 
-        // Parse default team data
-        if (defaultTeamCSV) {
-          const teamData = parseTeamTab(defaultTeamCSV);
-          if (teamData) {
-            teamDataCache.current[selectedTeamName] = teamData;
-            // Apply team tab data to roster
-            teamData.players.forEach(tp => {
-              const match = roster.find(p => p.name.toLowerCase() === tp.name.toLowerCase());
-              if (match) {
-                if (tp.handicap > 0) match.handicap = tp.handicap;
-                if (tp.avg > 0) match.avg = tp.avg;
-              } else if (tp.avg > 0) {
-                roster.push({ name: tp.name, team: teamData.teamName, avg: tp.avg, handicap: tp.handicap });
-              }
-            });
-            // Refine dates from team tab
-            teamData.weeks.forEach(w => {
-              if (w.weekNum && w.date) {
-                const parts = (w.date || '').split('/');
-                if (parts.length >= 2) {
-                  const m = parseInt(parts[0]) - 1;
-                  const d = parseInt(parts[1]);
-                  if (!isNaN(m) && !isNaN(d)) {
-                    // Determine year from season
-                    const year = season.seasonStart.getFullYear();
-                    weekDateMap[w.weekNum] = new Date(year, m, d);
-                  }
+        // Fetch ALL team tabs to get real handicaps
+        const teamEntries = Object.entries(season.teamGids);
+        const teamCSVs = await Promise.all(
+          teamEntries.map(([, gid]) =>
+            fetch(season.sheetBase + '&gid=' + gid).then(r => r.ok ? r.text() : '').catch(() => '')
+          )
+        );
+        if (cancelled) return;
+
+        // Parse each team tab and merge real handicaps into roster
+        teamEntries.forEach(([teamName, ], idx) => {
+          const csv = teamCSVs[idx];
+          if (!csv) return;
+          const teamData = parseTeamTab(csv);
+          if (!teamData) return;
+          teamDataCache.current[teamName] = teamData;
+
+          teamData.players.forEach(tp => {
+            const match = roster.find(p => p.name.toLowerCase() === tp.name.toLowerCase());
+            if (match) {
+              if (tp.handicap > 0) match.handicap = tp.handicap;
+              if (tp.avg > 0) match.avg = tp.avg;
+            } else if (tp.avg > 0) {
+              roster.push({ name: tp.name, team: teamData.teamName, avg: tp.avg, handicap: tp.handicap });
+            }
+          });
+        });
+
+        // Refine week dates from selected team's tab data
+        const selectedTeamData = teamDataCache.current[selectedTeamName];
+        if (selectedTeamData) {
+          selectedTeamData.weeks.forEach(w => {
+            if (w.weekNum && w.date) {
+              const parts = (w.date || '').split('/');
+              if (parts.length >= 2) {
+                const m = parseInt(parts[0]) - 1;
+                const d = parseInt(parts[1]);
+                if (!isNaN(m) && !isNaN(d)) {
+                  const year = season.seasonStart.getFullYear();
+                  weekDateMap[w.weekNum] = new Date(year, m, d);
                 }
               }
-            });
-          }
+            }
+          });
         }
 
         if (!cancelled) {
