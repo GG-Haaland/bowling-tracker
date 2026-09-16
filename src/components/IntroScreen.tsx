@@ -144,36 +144,52 @@ export default function IntroScreen({
           </>
         ) : (
           <>
-            {/* Live: Team selector */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '0.7em',
-            }}>
-              <button className="week-nav-btn" onClick={() => onChangeTeam(-1)} style={{ fontSize: '0.75em' }}>&#9664;</button>
-              <div style={{ textAlign: 'center', flex: 1 }}>
-                <div style={{
-                  fontSize: '0.72em',
-                  fontWeight: 700,
-                  letterSpacing: '0.16em',
-                  color: 'var(--yellow)',
-                  textTransform: 'uppercase',
-                  textShadow: '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
-                }}>
-                  YOUR TEAM
-                </div>
-                <div style={{
-                  fontSize: '0.85em',
-                  fontWeight: 900,
-                  color: 'var(--white-smoke)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
-                }}>
-                  {teamName.toUpperCase()}
-                </div>
+            {/* Live: Team dropdown */}
+            <div style={{ marginBottom: '0.7em', textAlign: 'center' }}>
+              <div style={{
+                fontSize: '0.72em',
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                color: 'var(--yellow)',
+                textTransform: 'uppercase',
+                textShadow: '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
+                marginBottom: '0.3em',
+              }}>
+                PICK YOUR TEAM
               </div>
-              <button className="week-nav-btn" onClick={() => onChangeTeam(1)} style={{ fontSize: '0.75em' }}>&#9654;</button>
+              <select
+                value={selectedTeamIndex}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (!isNaN(val)) onChangeTeam(val - selectedTeamIndex);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '0.5em 0.6em',
+                  fontSize: '0.82em',
+                  fontWeight: 900,
+                  fontFamily: 'var(--font-heading)',
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
+                  color: 'var(--white-smoke)',
+                  background: 'var(--dark-bg)',
+                  border: '2px solid var(--soft-black)',
+                  borderRadius: '0.35em',
+                  cursor: 'pointer',
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'3\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 0.6em center',
+                  textAlign: 'center',
+                }}
+              >
+                {season.teamNames.map((name, idx) => (
+                  <option key={name} value={idx} style={{ textTransform: 'uppercase' }}>
+                    {name.toUpperCase()}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Live: Week / Date selector */}
