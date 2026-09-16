@@ -151,17 +151,35 @@ export default function DashboardPage({
      ───────────────────────────────────────────── */
   const teamStanding = useMemo(() => {
     if (!sheetData.standings.length) return null;
-    const entry = sheetData.standings.find(
+    // Sort by place to ensure correct ordering
+    const sorted = [...sheetData.standings].sort((a, b) => a.place - b.place);
+    const entry = sorted.find(
       s => s.team.toLowerCase() === selectedTeamName.toLowerCase()
     );
     if (!entry) return null;
+
     // Playoff line = 6th place team
-    const sixth = sheetData.standings.find(s => s.place === 6);
+    const sixth = sorted.find(s => s.place === 6);
     const sixthDiff = sixth ? (sixth.wins - sixth.losses) : 0;
     const myDiff = entry.wins - entry.losses;
-    // Positive = above the line, negative = below the line, 0 = on the line
     const playoffGames = (myDiff - sixthDiff) / 2;
-    return { place: entry.place, wins: entry.wins, losses: entry.losses, ties: entry.ties, playoffGames };
+
+    // Find the team directly ahead in standings for pin tiebreaker
+    const myIdx = sorted.findIndex(s => s.team.toLowerCase() === selectedTeamName.toLowerCase());
+    const teamAhead = myIdx > 0 ? sorted[myIdx - 1] : null;
+    const isTiedWithAhead = teamAhead && teamAhead.wins === entry.wins && teamAhead.losses === entry.losses;
+    const pinDiffFromAhead = isTiedWithAhead ? entry.total - teamAhead.total : 0;
+
+    return {
+      place: entry.place,
+      wins: entry.wins,
+      losses: entry.losses,
+      ties: entry.ties,
+      playoffGames,
+      isTiedWithAhead: !!isTiedWithAhead,
+      pinDiffFromAhead,
+      teamAheadName: teamAhead?.team || '',
+    };
   }, [sheetData.standings, selectedTeamName]);
 
   const yourTeamCard = (
@@ -188,28 +206,47 @@ export default function DashboardPage({
           {selectedTeamName.toUpperCase()}
         </div>
         {teamStanding && (
-          <div style={{
-            fontSize: '0.72em',
-            color: 'var(--smoke)',
-            marginTop: '0.3em',
-            letterSpacing: '0.05em',
-          }}>
-            <span style={{ color: 'var(--yellow)', fontWeight: 800 }}>
-              {teamStanding.place}{teamStanding.place === 1 ? 'st' : teamStanding.place === 2 ? 'nd' : teamStanding.place === 3 ? 'rd' : 'th'}
-            </span>
-            {' \u2022 '}
-            <span style={{ fontWeight: 700 }}>
-              {teamStanding.wins}-{teamStanding.losses}{teamStanding.ties > 0 ? '-' + teamStanding.ties : ''}
-            </span>
-            {teamStanding.playoffGames !== 0 && (
-              <span style={{
-                color: teamStanding.playoffGames > 0 ? 'var(--green)' : 'var(--red)',
-                fontWeight: 800,
-              }}>
-                {' \u2022 '}{teamStanding.playoffGames > 0 ? '+' : ''}{teamStanding.playoffGames}
+          <>
+            <div style={{
+              fontSize: '0.72em',
+              color: 'var(--smoke)',
+              marginTop: '0.3em',
+              letterSpacing: '0.05em',
+            }}>
+              <span style={{ color: 'var(--yellow)', fontWeight: 800 }}>
+                {teamStanding.place}{teamStanding.place === 1 ? 'st' : teamStanding.place === 2 ? 'nd' : teamStanding.place === 3 ? 'rd' : 'th'}
               </span>
-            )}
-          </div>
+              {' \u2022 '}
+              <span style={{ fontWeight: 700 }}>
+                {teamStanding.wins}-{teamStanding.losses}{teamStanding.ties > 0 ? '-' + teamStanding.ties : ''}
+              </span>
+            </div>
+            <div style={{
+              fontSize: '0.65em',
+              marginTop: '0.4em',
+              letterSpacing: '0.04em',
+              color: 'var(--smoke)',
+            }}>
+              <span style={{ fontWeight: 700 }}>Playoff race: </span>
+              {teamStanding.playoffGames > 0 ? (
+                <span style={{ color: 'var(--green)', fontWeight: 800 }}>
+                  +{teamStanding.playoffGames} {teamStanding.playoffGames === 1 ? 'game' : 'games'} up
+                </span>
+              ) : teamStanding.playoffGames < 0 ? (
+                <span style={{ color: 'var(--red)', fontWeight: 800 }}>
+                  {teamStanding.playoffGames} {teamStanding.playoffGames === -1 ? 'game' : 'games'} back
+                </span>
+              ) : teamStanding.isTiedWithAhead ? (
+                <span style={{ color: 'var(--yellow)', fontWeight: 800 }}>
+                  Tied ({Math.abs(teamStanding.pinDiffFromAhead)} pins {teamStanding.pinDiffFromAhead >= 0 ? 'ahead of' : 'behind'} {teamStanding.teamAheadName})
+                </span>
+              ) : (
+                <span style={{ color: 'var(--yellow)', fontWeight: 800 }}>
+                  On the line
+                </span>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
