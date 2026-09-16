@@ -147,15 +147,29 @@ export default function DashboardPage({
   );
 
   /* ─────────────────────────────────────────────
-     SHARED: Your Team profile card
+     SHARED: Your Team profile card (with standings info)
      ───────────────────────────────────────────── */
+  const teamStanding = useMemo(() => {
+    if (!sheetData.standings.length) return null;
+    const entry = sheetData.standings.find(
+      s => s.team.toLowerCase() === selectedTeamName.toLowerCase()
+    );
+    if (!entry) return null;
+    // Playoff line = 6th place team
+    const sixth = sheetData.standings.find(s => s.place === 6);
+    const sixthDiff = sixth ? (sixth.wins - sixth.losses) : 0;
+    const myDiff = entry.wins - entry.losses;
+    // Positive = above the line, negative = below the line, 0 = on the line
+    const playoffGames = (myDiff - sixthDiff) / 2;
+    return { place: entry.place, wins: entry.wins, losses: entry.losses, ties: entry.ties, playoffGames };
+  }, [sheetData.standings, selectedTeamName]);
+
   const yourTeamCard = (
     <div className="profile-card">
       <div style={{
         background: 'var(--black)',
         borderRadius: '0.7em',
         padding: '1em',
-        marginBottom: '0.7em',
       }}>
         <div style={{
           fontSize: '0.72em',
@@ -173,15 +187,42 @@ export default function DashboardPage({
         }}>
           {selectedTeamName.toUpperCase()}
         </div>
+        {teamStanding && (
+          <div style={{
+            fontSize: '0.72em',
+            color: 'var(--smoke)',
+            marginTop: '0.3em',
+            letterSpacing: '0.05em',
+          }}>
+            <span style={{ color: 'var(--yellow)', fontWeight: 800 }}>
+              {teamStanding.place}{teamStanding.place === 1 ? 'st' : teamStanding.place === 2 ? 'nd' : teamStanding.place === 3 ? 'rd' : 'th'}
+            </span>
+            {' \u2022 '}
+            <span style={{ fontWeight: 700 }}>
+              {teamStanding.wins}-{teamStanding.losses}{teamStanding.ties > 0 ? '-' + teamStanding.ties : ''}
+            </span>
+            {teamStanding.playoffGames !== 0 && (
+              <span style={{
+                color: teamStanding.playoffGames > 0 ? 'var(--green)' : 'var(--red)',
+                fontWeight: 800,
+              }}>
+                {' \u2022 '}{teamStanding.playoffGames > 0 ? '+' : ''}{teamStanding.playoffGames}
+              </span>
+            )}
+          </div>
+        )}
       </div>
-      <button
-        className="contact-btn"
-        onClick={onNavigateHandicap}
-        style={{ marginBottom: 0, padding: '0.6em', fontSize: '0.88em' }}
-      >
-        HANDICAP SHEET
-      </button>
     </div>
+  );
+
+  const handicapBtn = (
+    <button
+      className="contact-btn"
+      onClick={onNavigateHandicap}
+      style={{ width: '100%', padding: '0.6em', fontSize: '0.88em' }}
+    >
+      HANDICAP SHEET
+    </button>
   );
 
   /* ─────────────────────────────────────────────
@@ -222,11 +263,12 @@ export default function DashboardPage({
         <div className="dashboard-stack">
           {/* 0. NAV BAR */}
           {navBar}
+          {handicapBtn}
 
           {/* 1. YOUR TEAM */}
           {yourTeamCard}
 
-          {/* 2. WEEK SELECTOR (under handicap button) */}
+          {/* 2. WEEK SELECTOR */}
           {weekSelector}
 
           {/* 3. HANDICAP EDGE */}
@@ -306,11 +348,12 @@ export default function DashboardPage({
       <div className="dashboard-stack">
         {/* 0. NAV BAR */}
         {navBar}
+        {handicapBtn}
 
         {/* 1. YOUR TEAM */}
         {yourTeamCard}
 
-        {/* 2. WEEK SELECTOR (under handicap button) */}
+        {/* 2. WEEK SELECTOR */}
         {weekSelector}
 
         {/* 3. TOP TEN BOWLERS */}
