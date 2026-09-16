@@ -102,83 +102,127 @@ export default function IntroScreen({
           </div>
         )}
 
-        {/* Team selector */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '0.7em',
-        }}>
-          <button className="week-nav-btn" onClick={() => onChangeTeam(-1)} style={{ fontSize: '0.75em' }}>&#9664;</button>
-          <div style={{ textAlign: 'center', flex: 1 }}>
-            <div style={{
-              fontSize: '0.72em',
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              color: 'var(--yellow)',
-              textTransform: 'uppercase',
-              textShadow: '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
-            }}>
-              YOUR TEAM
+        {season.isArchive ? (
+          <>
+            {/* Archive: Champion display */}
+            <div style={{ textAlign: 'center', marginBottom: '0.9em' }}>
+              <div style={{
+                fontSize: '0.72em',
+                fontWeight: 700,
+                letterSpacing: '0.16em',
+                color: 'var(--yellow)',
+                textTransform: 'uppercase',
+                textShadow: '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
+              }}>
+                CHAMPIONS
+              </div>
+              <div style={{
+                fontSize: '1em',
+                fontWeight: 900,
+                color: 'var(--yellow)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                textShadow: '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00, 0 0 10px rgba(255,204,0,1), 0 0 20px rgba(255,204,0,0.9), 0 0 40px rgba(255,204,0,0.7), 0 0 60px rgba(255,204,0,0.5), 0 0 80px rgba(255,204,0,0.3)',
+              }}>
+                {season.champion || ''}
+              </div>
             </div>
-            <div style={{
-              fontSize: '0.85em',
-              fontWeight: 900,
-              color: 'var(--white-smoke)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-            }}>
-              {teamName.toUpperCase()}
-            </div>
-          </div>
-          <button className="week-nav-btn" onClick={() => onChangeTeam(1)} style={{ fontSize: '0.75em' }}>&#9654;</button>
-        </div>
 
-        {/* Week / Date selector */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: '0.9em',
-        }}>
-          <button className="week-nav-btn" onClick={() => onChangeWeek(-1)} style={{ fontSize: '0.75em' }}>&#9664;</button>
-          <div style={{ textAlign: 'center', flex: 1 }}>
+            {/* Archive: Enter button */}
+            <button
+              className="power-btn"
+              onClick={onEnter}
+              disabled={loading}
+              style={powerBtnStyle}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                <path d="M12 2v8" />
+                <path d="M16.24 5.76a8 8 0 1 1-8.48 0" />
+              </svg>
+              <span className="click-bubble">CLICK</span>
+            </button>
+          </>
+        ) : (
+          <>
+            {/* Live: Team selector */}
             <div style={{
-              fontSize: '0.72em',
-              fontWeight: 700,
-              letterSpacing: '0.16em',
-              color: 'var(--yellow)',
-              textShadow: isThisWeek
-                ? '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00, 0 0 10px rgba(255,204,0,1), 0 0 20px rgba(255,204,0,0.9), 0 0 40px rgba(255,204,0,0.7), 0 0 60px rgba(255,204,0,0.5), 0 0 80px rgba(255,204,0,0.3)'
-                : '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.7em',
             }}>
-              {weekLabel}
+              <button className="week-nav-btn" onClick={() => onChangeTeam(-1)} style={{ fontSize: '0.75em' }}>&#9664;</button>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{
+                  fontSize: '0.72em',
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  color: 'var(--yellow)',
+                  textTransform: 'uppercase',
+                  textShadow: '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
+                }}>
+                  YOUR TEAM
+                </div>
+                <div style={{
+                  fontSize: '0.85em',
+                  fontWeight: 900,
+                  color: 'var(--white-smoke)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                }}>
+                  {teamName.toUpperCase()}
+                </div>
+              </div>
+              <button className="week-nav-btn" onClick={() => onChangeTeam(1)} style={{ fontSize: '0.75em' }}>&#9654;</button>
             </div>
-            <div style={{
-              fontSize: '0.95em',
-              fontWeight: 900,
-              color: 'var(--white-smoke)',
-              letterSpacing: '0.06em',
-            }}>
-              {formatBowlingDate(selectedDate)}
-            </div>
-          </div>
-          <button className="week-nav-btn" onClick={() => onChangeWeek(1)} style={{ fontSize: '0.75em' }}>&#9654;</button>
-        </div>
 
-        {/* Power button */}
-        <button
-          className="power-btn"
-          onClick={onEnter}
-          disabled={loading}
-          style={powerBtnStyle}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-            <path d="M12 2v8" />
-            <path d="M16.24 5.76a8 8 0 1 1-8.48 0" />
-          </svg>
-          <span className="click-bubble">CLICK</span>
-        </button>
+            {/* Live: Week / Date selector */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '0.9em',
+            }}>
+              <button className="week-nav-btn" onClick={() => onChangeWeek(-1)} style={{ fontSize: '0.75em' }}>&#9664;</button>
+              <div style={{ textAlign: 'center', flex: 1 }}>
+                <div style={{
+                  fontSize: '0.72em',
+                  fontWeight: 700,
+                  letterSpacing: '0.16em',
+                  color: 'var(--yellow)',
+                  textShadow: isThisWeek
+                    ? '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00, 0 0 10px rgba(255,204,0,1), 0 0 20px rgba(255,204,0,0.9), 0 0 40px rgba(255,204,0,0.7), 0 0 60px rgba(255,204,0,0.5), 0 0 80px rgba(255,204,0,0.3)'
+                    : '-1px -1px 0 #8a6e00, 1px -1px 0 #8a6e00, -1px 1px 0 #8a6e00, 1px 1px 0 #8a6e00',
+                }}>
+                  {weekLabel}
+                </div>
+                <div style={{
+                  fontSize: '0.95em',
+                  fontWeight: 900,
+                  color: 'var(--white-smoke)',
+                  letterSpacing: '0.06em',
+                }}>
+                  {formatBowlingDate(selectedDate)}
+                </div>
+              </div>
+              <button className="week-nav-btn" onClick={() => onChangeWeek(1)} style={{ fontSize: '0.75em' }}>&#9654;</button>
+            </div>
+
+            {/* Live: Power button */}
+            <button
+              className="power-btn"
+              onClick={onEnter}
+              disabled={loading}
+              style={powerBtnStyle}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                <path d="M12 2v8" />
+                <path d="M16.24 5.76a8 8 0 1 1-8.48 0" />
+              </svg>
+              <span className="click-bubble">CLICK</span>
+            </button>
+          </>
+        )}
       </div>
 
       {/* Playoffs button below the badge */}

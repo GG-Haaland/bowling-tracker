@@ -7,6 +7,7 @@ interface HandicapPageProps {
   selectedTeamName: string;
   loadTeamData: (name: string) => Promise<TeamData | null>;
   onBack: () => void;
+  teamNames?: string[];
 }
 
 interface HcpPlayer {
@@ -15,12 +16,12 @@ interface HcpPlayer {
   handicap: number;
 }
 
-export default function HandicapPage({ roster, selectedTeamName, loadTeamData, onBack }: HandicapPageProps) {
+export default function HandicapPage({ roster, selectedTeamName, loadTeamData, onBack, teamNames }: HandicapPageProps) {
   const [teamName, setTeamName] = useState(selectedTeamName || '');
   const [players, setPlayers] = useState<HcpPlayer[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const teams = Object.keys(TEAM_GIDS).filter(t => !/ghost\s*team/i.test(t)).sort();
+  const teams = (teamNames || Object.keys(TEAM_GIDS)).filter(t => !/ghost\s*team/i.test(t)).sort();
 
   useEffect(() => {
     if (!teamName) { setPlayers([]); return; }

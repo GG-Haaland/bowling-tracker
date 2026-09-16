@@ -17,6 +17,7 @@ export interface SeasonConfig {
   gamesPerWeek: number;
   playersPerGame: number;
   isArchive: boolean;
+  champion?: string;      // Archive seasons only
 }
 
 // ── Spring 2026 ──────────────────────────────────────────────────────────────
@@ -71,6 +72,7 @@ export const SPRING_2026: SeasonConfig = {
   gamesPerWeek: 2,
   playersPerGame: 3,
   isArchive: true,
+  champion: 'Stranger Pins',
 };
 
 // ── Fall 2026 ────────────────────────────────────────────────────────────────

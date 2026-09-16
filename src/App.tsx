@@ -8,9 +8,10 @@ import LeaderboardPage from '@/pages/LeaderboardPage';
 import SchedulePage from '@/pages/SchedulePage';
 import StandingsPage from '@/pages/StandingsPage';
 import DashboardPage from '@/pages/DashboardPage';
+import ArchiveDashboard from '@/pages/ArchiveDashboard';
 import PlayoffPage from '@/pages/PlayoffPage';
 
-type View = 'intro' | 'dashboard' | 'handicap' | 'leaderboard' | 'schedule' | 'standings' | 'playoff';
+type View = 'intro' | 'dashboard' | 'handicap' | 'leaderboard' | 'schedule' | 'standings' | 'playoff' | 'teams';
 
 export default function App() {
   const [view, setView] = useState<View>('intro');
@@ -96,6 +97,14 @@ export default function App() {
   }, []);
 
   const handleBackFromHandicap = useCallback(() => {
+    setView(season.isArchive ? 'dashboard' : 'dashboard');
+  }, [season.isArchive]);
+
+  const handleNavigateTeams = useCallback(() => {
+    setView('teams');
+  }, []);
+
+  const handleBackFromTeams = useCallback(() => {
     setView('dashboard');
   }, []);
 
@@ -105,7 +114,7 @@ export default function App() {
 
   const handleBackFromLeaderboard = useCallback(() => {
     setView('dashboard');
-  }, []);
+  }, [season.isArchive]);
 
   const handleNavigateSchedule = useCallback(() => {
     setView('schedule');
@@ -155,13 +164,14 @@ export default function App() {
     );
   }
 
-  if (view === 'handicap') {
+  if (view === 'handicap' || view === 'teams') {
     return (
       <HandicapPage
         roster={sheetData.roster}
         selectedTeamName={selectedTeamName}
         loadTeamData={sheetData.loadTeamData}
-        onBack={handleBackFromHandicap}
+        onBack={view === 'teams' ? handleBackFromTeams : handleBackFromHandicap}
+        teamNames={season.teamNames}
       />
     );
   }
@@ -192,6 +202,19 @@ export default function App() {
         onBack={handleBackFromStandings}
         selectedTeamName={selectedTeamName}
         season={season}
+      />
+    );
+  }
+
+  // Archive seasons get a simplified dashboard
+  if (season.isArchive) {
+    return (
+      <ArchiveDashboard
+        season={season}
+        onNavigateLeaderboard={handleNavigateLeaderboard}
+        onNavigateStandings={handleNavigateStandings}
+        onNavigateTeams={handleNavigateTeams}
+        onBack={() => setView('intro')}
       />
     );
   }
