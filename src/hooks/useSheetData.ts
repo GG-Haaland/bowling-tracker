@@ -60,17 +60,16 @@ export function useSheetData(selectedTeamName: string, season: SeasonConfig) {
       try {
         const defaultTeamGid = season.teamGids[selectedTeamName] || Object.values(season.teamGids)[0];
 
-        // Build fetch list — Spring has roster/handicap, Fall doesn't
+        // Build fetch list
         const fetches: Promise<string>[] = [
           fetch(season.sheetUrls.schedule).then(r => { if (!r.ok) throw new Error('schedule'); return r.text(); }),
           fetch(season.sheetUrls.standings).then(r => r.ok ? r.text() : '').catch(() => ''),
           fetch(season.sheetBase + '&gid=' + defaultTeamGid).then(r => r.ok ? r.text() : '').catch(() => ''),
+          // Always fetch leaderboard for player data
+          fetch(season.sheetUrls.leaderboard).then(r => r.ok ? r.text() : '').catch(() => ''),
         ];
 
-        // Only fetch roster/handicap for Spring (they exist as separate tabs)
-        if (season.sheetUrls.roster) {
-          fetches.push(fetch(season.sheetUrls.roster).then(r => r.ok ? r.text() : '').catch(() => ''));
-        }
+        // Spring also has a separate handicap tab
         if (season.sheetUrls.handicap) {
           fetches.push(fetch(season.sheetUrls.handicap).then(r => r.ok ? r.text() : '').catch(() => ''));
         }
@@ -78,14 +77,13 @@ export function useSheetData(selectedTeamName: string, season: SeasonConfig) {
         const results = await Promise.all(fetches);
         if (cancelled) return;
 
-        const [scheduleCSV, standingsCSV, defaultTeamCSV] = results;
-        const rosterCSV = season.sheetUrls.roster ? results[3] || '' : '';
+        const [scheduleCSV, standingsCSV, defaultTeamCSV, leaderboardCSV] = results;
         const handicapCSV = season.sheetUrls.handicap ? results[4] || '' : '';
 
-        // Parse roster (Spring has dedicated roster tab; Fall builds from leaderboard/team data)
+        // Build roster from leaderboard (works for both Spring and Fall)
         let roster: Player[] = [];
-        if (rosterCSV) {
-          roster = parseRosterCSV(rosterCSV);
+        if (leaderboardCSV) {
+          roster = parseRosterCSV(leaderboardCSV);
           if (handicapCSV) {
             applyHandicapSheet(handicapCSV, roster);
           }
