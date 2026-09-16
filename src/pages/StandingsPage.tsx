@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { SHEET_URLS } from '@/lib/constants';
+import type { SeasonConfig } from '@/lib/constants';
 
 /** A single team row from the Standings tab */
 interface StandingsTeam {
@@ -22,6 +22,7 @@ type SortDir = 'asc' | 'desc';
 interface StandingsPageProps {
   onBack: () => void;
   selectedTeamName: string;
+  season: SeasonConfig;
 }
 
 /* ── CSV helpers ─────────────────────────────────────────────── */
@@ -235,7 +236,7 @@ const thStyle: React.CSSProperties = {
 
 /* ── Component ───────────────────────────────────────────────── */
 
-export default function StandingsPage({ onBack, selectedTeamName }: StandingsPageProps) {
+export default function StandingsPage({ onBack, selectedTeamName, season }: StandingsPageProps) {
   const [allTeams, setAllTeams] = useState<StandingsTeam[]>([]);
   const [presentCols, setPresentCols] = useState<ColDef[]>([]);
   const [loading, setLoading] = useState(true);
@@ -244,7 +245,7 @@ export default function StandingsPage({ onBack, selectedTeamName }: StandingsPag
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   useEffect(() => {
-    fetch(SHEET_URLS.standings)
+    fetch(season.sheetUrls.standings)
       .then(r => r.text())
       .then(csv => {
         const { teams, presentCols: cols } = parseStandingsCSV(csv);

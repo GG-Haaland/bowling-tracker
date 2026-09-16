@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
-import { TEAM_NAMES, formatBowlingDate, isCurrentBowlingWeek } from '@/lib/constants';
+import { formatBowlingDate, isCurrentBowlingWeek } from '@/lib/constants';
+import type { SeasonConfig } from '@/lib/constants';
 import { DottedSurface } from '@/components/ui/dotted-surface';
 
 interface IntroScreenProps {
@@ -11,6 +12,9 @@ interface IntroScreenProps {
   onChangeWeek: (delta: number) => void;
   onEnter: () => void;
   onPlayoffs: () => void;
+  season: SeasonConfig;
+  seasons: SeasonConfig[];
+  onChangeSeason: (season: SeasonConfig) => void;
 }
 
 export default function IntroScreen({
@@ -22,8 +26,11 @@ export default function IntroScreen({
   onChangeWeek,
   onEnter,
   onPlayoffs,
+  season,
+  seasons,
+  onChangeSeason,
 }: IntroScreenProps) {
-  const teamName = TEAM_NAMES[selectedTeamIndex];
+  const teamName = season.teamNames[selectedTeamIndex];
   const isThisWeek = isCurrentBowlingWeek(selectedDate);
   const weekLabel = isThisWeek ? 'THIS WEEK' : `WEEK ${currentWeek}`;
 
@@ -61,6 +68,39 @@ export default function IntroScreen({
             {loading ? 'Loading data...' : 'Select your team and week'}
           </p>
         </div>
+
+        {/* Season toggle */}
+        {seasons.length > 1 && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '0.7em',
+            gap: '0.35em',
+          }}>
+            {seasons.map(s => (
+              <button
+                key={s.id}
+                onClick={() => onChangeSeason(s)}
+                style={{
+                  padding: '0.25em 0.65em',
+                  fontSize: '0.62em',
+                  fontWeight: 800,
+                  fontFamily: 'var(--font-body)',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  borderRadius: '0.3em',
+                  border: s.id === season.id ? '2px solid var(--yellow)' : '2px solid var(--soft-black)',
+                  background: s.id === season.id ? 'rgba(255,204,0,0.15)' : 'rgba(0,0,0,0.3)',
+                  color: s.id === season.id ? 'var(--yellow)' : 'var(--smoke)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Team selector */}
         <div style={{

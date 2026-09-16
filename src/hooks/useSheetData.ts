@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Player, TeamData, WeekSchedule, StandingsEntry, TeamGame } from '@/lib/types';
+import type { SeasonConfig } from '@/lib/constants';
 import {
-  SHEET_BASE, SHEET_URLS, TEAM_GIDS, TOTAL_WEEKS,
   buildInitialWeekDateMap, parseSheetDate, normStr, normTeam,
 } from '@/lib/constants';
 import {
@@ -19,7 +19,7 @@ export interface SheetState {
   weekDateMap: Record<number, Date>;
 }
 
-export function useSheetData(selectedTeamName: string) {
+export function useSheetData(selectedTeamName: string, season: SeasonConfig) {
   const [state, setState] = useState<SheetState>({
     loading: true,
     error: null,
@@ -27,17 +27,22 @@ export function useSheetData(selectedTeamName: string) {
     allWeeks: [],
     standings: [],
     teamAvgMap: {},
-    weekDateMap: buildInitialWeekDateMap(),
+    weekDateMap: buildInitialWeekDateMap(season),
   });
 
   const teamDataCache = useRef<Record<string, TeamData>>({});
 
+  // Reset cache when season changes
+  useEffect(() => {
+    teamDataCache.current = {};
+  }, [season.id]);
+
   const loadTeamData = useCallback(async (teamName: string): Promise<TeamData | null> => {
     if (teamDataCache.current[teamName]) return teamDataCache.current[teamName];
-    const gid = TEAM_GIDS[teamName];
+    const gid = season.teamGids[teamName];
     if (!gid) return null;
     try {
-      const csv = await fetch(SHEET_BASE + '&gid=' + gid).then(r => r.text());
+      const csv = await fetch(season.sheetBase + '&gid=' + gid).then(r => r.text());
       const data = parseTeamTab(csv);
       if (data) teamDataCache.current[teamName] = data;
       return data;
@@ -45,7 +50,7 @@ export function useSheetData(selectedTeamName: string) {
       console.warn('Failed to load team data for', teamName, (e as Error).message);
       return null;
     }
-  }, []);
+  }, [season]);
 
   // Initial data load
   useEffect(() => {
@@ -53,20 +58,38 @@ export function useSheetData(selectedTeamName: string) {
 
     async function load() {
       try {
-        const defaultTeamGid = TEAM_GIDS[selectedTeamName] || TEAM_GIDS['Gutter & Sons'];
+        const defaultTeamGid = season.teamGids[selectedTeamName] || Object.values(season.teamGids)[0];
 
-        const [rosterCSV, handicapCSV, scheduleCSV, standingsCSV, defaultTeamCSV] = await Promise.all([
-          fetch(SHEET_URLS.roster).then(r   => { if (!r.ok) throw new Error('roster');   return r.text(); }),
-          fetch(SHEET_URLS.handicap).then(r => { if (!r.ok) throw new Error('handicap'); return r.text(); }),
-          fetch(SHEET_URLS.schedule).then(r => { if (!r.ok) throw new Error('schedule'); return r.text(); }),
-          fetch(SHEET_URLS.standings).then(r => r.ok ? r.text() : '').catch(() => ''),
-          fetch(SHEET_BASE + '&gid=' + defaultTeamGid).then(r => r.ok ? r.text() : '').catch(() => ''),
-        ]);
+        // Build fetch list — Spring has roster/handicap, Fall doesn't
+        const fetches: Promise<string>[] = [
+          fetch(season.sheetUrls.schedule).then(r => { if (!r.ok) throw new Error('schedule'); return r.text(); }),
+          fetch(season.sheetUrls.standings).then(r => r.ok ? r.text() : '').catch(() => ''),
+          fetch(season.sheetBase + '&gid=' + defaultTeamGid).then(r => r.ok ? r.text() : '').catch(() => ''),
+        ];
 
+        // Only fetch roster/handicap for Spring (they exist as separate tabs)
+        if (season.sheetUrls.roster) {
+          fetches.push(fetch(season.sheetUrls.roster).then(r => r.ok ? r.text() : '').catch(() => ''));
+        }
+        if (season.sheetUrls.handicap) {
+          fetches.push(fetch(season.sheetUrls.handicap).then(r => r.ok ? r.text() : '').catch(() => ''));
+        }
+
+        const results = await Promise.all(fetches);
         if (cancelled) return;
 
-        const roster = parseRosterCSV(rosterCSV);
-        applyHandicapSheet(handicapCSV, roster);
+        const [scheduleCSV, standingsCSV, defaultTeamCSV] = results;
+        const rosterCSV = season.sheetUrls.roster ? results[3] || '' : '';
+        const handicapCSV = season.sheetUrls.handicap ? results[4] || '' : '';
+
+        // Parse roster (Spring has dedicated roster tab; Fall builds from leaderboard/team data)
+        let roster: Player[] = [];
+        if (rosterCSV) {
+          roster = parseRosterCSV(rosterCSV);
+          if (handicapCSV) {
+            applyHandicapSheet(handicapCSV, roster);
+          }
+        }
 
         const { avgMap, entries: standings } = standingsCSV
           ? parseStandingsCSV(standingsCSV)
@@ -75,7 +98,7 @@ export function useSheetData(selectedTeamName: string) {
         const allWeeks = parseScheduleCSV(scheduleCSV);
 
         // Build week date map from schedule
-        const weekDateMap = buildInitialWeekDateMap();
+        const weekDateMap = buildInitialWeekDateMap(season);
         allWeeks.forEach((week, idx) => {
           if (week.date) {
             const parsed = parseSheetDate(week.date);
@@ -106,7 +129,9 @@ export function useSheetData(selectedTeamName: string) {
                   const m = parseInt(parts[0]) - 1;
                   const d = parseInt(parts[1]);
                   if (!isNaN(m) && !isNaN(d)) {
-                    weekDateMap[w.weekNum] = new Date(new Date().getFullYear(), m, d);
+                    // Determine year from season
+                    const year = season.seasonStart.getFullYear();
+                    weekDateMap[w.weekNum] = new Date(year, m, d);
                   }
                 }
               }
@@ -139,7 +164,7 @@ export function useSheetData(selectedTeamName: string) {
 
     load();
     return () => { cancelled = true; };
-  }, [selectedTeamName]);
+  }, [selectedTeamName, season.id]);
 
   // Helper: look up team avg (case-insensitive)
   const lookupTeamAvg = useCallback((name: string): number => {

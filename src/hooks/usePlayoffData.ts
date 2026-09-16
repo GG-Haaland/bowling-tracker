@@ -30,11 +30,11 @@ export function usePlayoffData() {
             if (!r.ok) throw new Error('playoff sheet');
             return r.text();
           }),
-          fetch(SHEET_URLS.roster).then(r => {
+          fetch(SHEET_URLS.roster!).then(r => {
             if (!r.ok) throw new Error('roster');
             return r.text();
           }),
-          fetch(SHEET_URLS.handicap).then(r => {
+          fetch(SHEET_URLS.handicap!).then(r => {
             if (!r.ok) throw new Error('handicap');
             return r.text();
           }),

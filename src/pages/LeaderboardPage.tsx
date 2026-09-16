@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { SHEET_URLS } from '@/lib/constants';
+import type { SeasonConfig } from '@/lib/constants';
 
 interface LeaderboardPlayer {
   rank: number;
@@ -17,6 +17,7 @@ type SortDir = 'asc' | 'desc';
 
 interface LeaderboardPageProps {
   onBack: () => void;
+  season: SeasonConfig;
 }
 
 function parseCSVLine(line: string): string[] {
@@ -94,7 +95,7 @@ const thStyle: React.CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
-export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
+export default function LeaderboardPage({ onBack, season }: LeaderboardPageProps) {
   const [players, setPlayers] = useState<LeaderboardPlayer[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeam, setSelectedTeam] = useState('All Teams');
@@ -102,7 +103,7 @@ export default function LeaderboardPage({ onBack }: LeaderboardPageProps) {
   const [sortDir, setSortDir] = useState<SortDir>('asc');
 
   useEffect(() => {
-    fetch(SHEET_URLS.roster)
+    fetch(season.sheetUrls.leaderboard)
       .then(r => r.text())
       .then(csv => {
         const parsed = parseLeaderboardCSV(csv);

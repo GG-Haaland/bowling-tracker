@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TEAM_NAMES, getMostRecentWednesday, TOTAL_WEEKS } from '@/lib/constants';
+import { DEFAULT_SEASON, SEASONS, getMostRecentWednesday } from '@/lib/constants';
+import type { SeasonConfig } from '@/lib/constants';
 import { useSheetData } from '@/hooks/useSheetData';
 import IntroScreen from '@/components/IntroScreen';
 import HandicapPage from '@/components/HandicapPage';
@@ -13,15 +14,24 @@ type View = 'intro' | 'dashboard' | 'handicap' | 'leaderboard' | 'schedule' | 's
 
 export default function App() {
   const [view, setView] = useState<View>('intro');
+  const [season, setSeason] = useState<SeasonConfig>(DEFAULT_SEASON);
   const [selectedTeamIndex, setSelectedTeamIndex] = useState(0);
-  const selectedTeamName = TEAM_NAMES[selectedTeamIndex];
+  const selectedTeamName = season.teamNames[selectedTeamIndex];
 
   // Week & date state
   const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
   const [selectedDate, setSelectedDate] = useState(getMostRecentWednesday);
 
-  // Load all sheet data
-  const sheetData = useSheetData(selectedTeamName);
+  // Load all sheet data for the active season
+  const sheetData = useSheetData(selectedTeamName, season);
+
+  // Reset team index when switching seasons
+  const handleChangeSeason = useCallback((newSeason: SeasonConfig) => {
+    setSeason(newSeason);
+    setSelectedTeamIndex(0); // Reset to Gutter & Sons (always first)
+    setCurrentWeekIndex(0);
+    setView('intro');
+  }, []);
 
   // After data loads, find the current week
   useEffect(() => {
@@ -31,7 +41,7 @@ export default function App() {
     let matchIdx = -1;
 
     // Try weekDateMap
-    for (let w = 1; w <= TOTAL_WEEKS; w++) {
+    for (let w = 1; w <= season.totalWeeks; w++) {
       const d = sheetData.weekDateMap[w];
       if (d && d.getMonth() === today.getMonth() && d.getDate() === today.getDate()) {
         matchIdx = w - 1;
@@ -41,7 +51,7 @@ export default function App() {
     // Fall back to most recent past week
     if (matchIdx === -1) {
       const now = new Date();
-      for (let w = TOTAL_WEEKS; w >= 1; w--) {
+      for (let w = season.totalWeeks; w >= 1; w--) {
         const d = sheetData.weekDateMap[w];
         if (d && d <= now) { matchIdx = w - 1; break; }
       }
@@ -50,33 +60,32 @@ export default function App() {
 
     setCurrentWeekIndex(matchIdx);
     setSelectedDate(sheetData.weekDateMap[matchIdx + 1] || today);
-  }, [sheetData.loading, sheetData.weekDateMap]);
+  }, [sheetData.loading, sheetData.weekDateMap, season.totalWeeks]);
 
   const handleChangeTeam = useCallback((delta: number) => {
     setSelectedTeamIndex(prev =>
-      (prev + delta + TEAM_NAMES.length) % TEAM_NAMES.length
+      (prev + delta + season.teamNames.length) % season.teamNames.length
     );
-  }, []);
+  }, [season.teamNames.length]);
 
-  // New: change team by name (called from MatchupPicker dropdown)
   const handleChangeTeamByName = useCallback((teamName: string) => {
-    const idx = TEAM_NAMES.findIndex(
+    const idx = season.teamNames.findIndex(
       t => t.toLowerCase() === teamName.toLowerCase()
     );
     if (idx !== -1) {
       setSelectedTeamIndex(idx);
     }
-  }, []);
+  }, [season.teamNames]);
 
   const handleChangeWeek = useCallback((delta: number) => {
     setCurrentWeekIndex(prev => {
-      const maxIdx = Math.max(11, sheetData.allWeeks.length - 1);
+      const maxIdx = Math.max(season.totalWeeks - 1, sheetData.allWeeks.length - 1);
       const newIdx = Math.max(0, Math.min(maxIdx, prev + delta));
       const weekDate = sheetData.weekDateMap[newIdx + 1];
       if (weekDate) setSelectedDate(weekDate);
       return newIdx;
     });
-  }, [sheetData.allWeeks.length, sheetData.weekDateMap]);
+  }, [sheetData.allWeeks.length, sheetData.weekDateMap, season.totalWeeks]);
 
   const handleEnterDashboard = useCallback(() => {
     setView('dashboard');
@@ -133,6 +142,9 @@ export default function App() {
         onChangeWeek={handleChangeWeek}
         onEnter={handleEnterDashboard}
         onPlayoffs={handleNavigatePlayoff}
+        season={season}
+        seasons={SEASONS}
+        onChangeSeason={handleChangeSeason}
       />
     );
   }
@@ -158,6 +170,7 @@ export default function App() {
     return (
       <LeaderboardPage
         onBack={handleBackFromLeaderboard}
+        season={season}
       />
     );
   }
@@ -168,6 +181,7 @@ export default function App() {
         onBack={handleBackFromSchedule}
         selectedTeamName={selectedTeamName}
         initialWeekIndex={currentWeekIndex}
+        season={season}
       />
     );
   }
@@ -177,6 +191,7 @@ export default function App() {
       <StandingsPage
         onBack={handleBackFromStandings}
         selectedTeamName={selectedTeamName}
+        season={season}
       />
     );
   }
@@ -193,6 +208,7 @@ export default function App() {
       onNavigateLeaderboard={handleNavigateLeaderboard}
       onNavigateSchedule={handleNavigateSchedule}
       onNavigateStandings={handleNavigateStandings}
+      season={season}
     />
   );
 }

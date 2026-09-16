@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { SHEET_URLS } from '@/lib/constants';
+import type { SeasonConfig } from '@/lib/constants';
 
 interface LaneMatchup {
   lane: string;
@@ -22,6 +22,7 @@ interface SchedulePageProps {
   onBack: () => void;
   selectedTeamName: string;
   initialWeekIndex: number;
+  season: SeasonConfig;
 }
 
 function parseCSVLine(line: string): string[] {
@@ -135,13 +136,13 @@ function formatWeekDate(dateStr: string): string {
   return `${m[2]} ${m[1]}`;
 }
 
-export default function SchedulePage({ onBack, selectedTeamName, initialWeekIndex }: SchedulePageProps) {
+export default function SchedulePage({ onBack, selectedTeamName, initialWeekIndex, season }: SchedulePageProps) {
   const [weeks, setWeeks] = useState<ScheduleWeek[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekIdx, setWeekIdx] = useState(initialWeekIndex);
 
   useEffect(() => {
-    fetch(SHEET_URLS.schedule)
+    fetch(season.sheetUrls.schedule)
       .then(r => r.text())
       .then(csv => {
         const parsed = parseScheduleCSV(csv);

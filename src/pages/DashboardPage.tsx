@@ -27,6 +27,7 @@ interface DashboardPageProps {
   onNavigateLeaderboard: () => void;
   onNavigateSchedule: () => void;
   onNavigateStandings: () => void;
+  season?: import('@/lib/constants').SeasonConfig;
 }
 
 export default function DashboardPage({
@@ -40,6 +41,7 @@ export default function DashboardPage({
   onNavigateLeaderboard,
   onNavigateSchedule,
   onNavigateStandings,
+  season,
 }: DashboardPageProps) {
   const weekNum = currentWeekIndex + 1;
   const schedule = sheetData.allWeeks[currentWeekIndex] || { week: '', date: '', slots: [] };
