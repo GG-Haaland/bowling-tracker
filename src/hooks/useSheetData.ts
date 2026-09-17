@@ -147,6 +147,16 @@ export function useSheetData(selectedTeamName: string, season: SeasonConfig) {
           });
         }
 
+        // Add a "Substitute" player (handicap 56) to every team
+        const teamsInRoster = new Set(roster.map(p => p.team));
+        // Also include teams from the season config that might not have roster entries yet
+        season.teamNames.forEach(t => teamsInRoster.add(t));
+        teamsInRoster.forEach(team => {
+          if (team) {
+            roster.push({ name: 'Substitute', team, avg: 120, handicap: 56 });
+          }
+        });
+
         if (!cancelled) {
           setState({
             loading: false,
