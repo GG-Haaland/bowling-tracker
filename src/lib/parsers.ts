@@ -71,20 +71,25 @@ export function parseTeamTab(csv: string): TeamData | null {
 
   const hdr = rows[hdrIdx];
 
-  // Separate regular player columns from sub columns
+  // Find key columns by header name
+  const oppCol = hdr.findIndex((h) => /^opponent$/i.test((h || '').trim()));
+  const wltCol = hdr.findIndex((h, i) => i > 3 && /^w\/l/i.test((h || '').trim()));
+
+  // Player columns start after Opponent and end before W/L/T
+  const playerStart = oppCol >= 0 ? oppCol + 1 : 6;
+  const playerEnd = wltCol >= 0 ? wltCol : hdr.length;
+
   const playerCols: { name: string; col: number }[] = [];
   const subCols: { name: string; col: number }[] = [];
-  for (let c = 6; c < hdr.length; c++) {
+  for (let c = playerStart; c < playerEnd; c++) {
     const h = (hdr[c] || '').trim();
-    if (!h || /^w\/l/i.test(h)) break;
+    if (!h) continue;
     if (/^sub\s*\d/i.test(h)) {
       subCols.push({ name: h, col: c });
     } else {
       playerCols.push({ name: h, col: c });
     }
   }
-
-  const wltCol = hdr.findIndex((h, i) => i > 5 && /^w\/l/i.test((h || '').trim()));
 
   // Find Scratch Total/Opp and Adjusted Total/Opp columns after W/L
   // The row above the header has "Scratch" and "Adjusted" spanning pairs of columns
@@ -120,18 +125,21 @@ export function parseTeamTab(csv: string): TeamData | null {
   let statsStart = -1;
   let lastWeekNum = 0;
 
+  // Use the opponent column for reading opponent name; fall back to col 5
+  const oppIdx = oppCol >= 0 ? oppCol : 5;
+
   for (let i = hdrIdx + 1; i < rows.length; i++) {
     const row = rows[i];
-    const label5 = (row[5] || '').trim();
+    const opponent = (row[oppIdx] || '').trim();
 
-    if (/^(total|average|handicap|high|std\s*dev)/i.test(label5)) {
+    if (/^(total|average|handicap|high|std\s*dev)/i.test(opponent)) {
       statsStart = i;
       break;
     }
 
     let wk = parseInt(row[1]);
     if (isNaN(wk)) {
-      if (lastWeekNum > 0 && label5 && !/^(bye|open|byes?)\s*$/i.test(label5)) {
+      if (lastWeekNum > 0 && opponent && !/^(bye|open|byes?)\s*$/i.test(opponent)) {
         wk = lastWeekNum;
       } else {
         continue;
@@ -167,7 +175,7 @@ export function parseTeamTab(csv: string): TeamData | null {
       date: (row[2] || '').trim(),
       time: (row[3] || '').trim(),
       lane: (row[4] || '').trim(),
-      opponent: label5,
+      opponent,
       scores,
       wlt: wltCol >= 0 ? (row[wltCol] || '').trim() : '',
       scratchTotal: parseNum(scratchTotalCol),
@@ -182,7 +190,7 @@ export function parseTeamTab(csv: string): TeamData | null {
   if (statsStart >= 0) {
     for (let i = statsStart; i < rows.length; i++) {
       const row = rows[i];
-      const label = (row[5] || '').trim();
+      const label = (row[oppIdx] || '').trim();
       if (!label) continue;
       const vals: Record<string, number | null> = {};
       playerCols.forEach(p => {
