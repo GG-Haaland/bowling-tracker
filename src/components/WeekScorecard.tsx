@@ -199,46 +199,82 @@ function PastWeekView({ rows, teamData, oppDatas }: {
                 marginTop: '0.6em', padding: '0.5em 0.6em', borderRadius: '0.35em',
                 background: 'rgba(0,0,0,0.25)', border: '1px solid var(--soft-black)',
               }}>
+                {/* Scratch (Raw) Totals */}
                 <div style={{
                   fontSize: '0.68em', color: 'var(--smoke)', letterSpacing: '0.1em',
-                  textTransform: 'uppercase', marginBottom: '0.4em', textAlign: 'center',
+                  textTransform: 'uppercase', marginBottom: '0.35em', textAlign: 'center',
                 }}>
-                  TOTAL RAW PINS
+                  SCRATCH
                 </div>
 
-                {myScores.length > 0 && (
+                {r.scratchTotal != null && (
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    marginBottom: oppScores.length > 0 ? '0.3em' : 0,
+                    marginBottom: '0.2em',
                   }}>
-                    <span style={{
-                      fontSize: '0.75em', fontWeight: 700, color: 'var(--yellow)',
-                      letterSpacing: '0.05em',
-                    }}>
+                    <span style={{ fontSize: '0.72em', fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.05em' }}>
                       YOUR TEAM
                     </span>
-                    <span style={{ fontSize: '0.85em', fontWeight: 900, color: 'var(--yellow)' }}>
-                      {myRawTotal}
+                    <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--yellow)' }}>
+                      {r.scratchTotal}
                     </span>
                   </div>
                 )}
 
-                {oppScores.length > 0 && (
+                {r.scratchOpp != null && (
                   <div style={{
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
-                    <span style={{
-                      fontSize: '0.75em', fontWeight: 700, color: '#ff7a5a',
-                      letterSpacing: '0.05em',
-                    }}>
+                    <span style={{ fontSize: '0.72em', fontWeight: 700, color: '#ff7a5a', letterSpacing: '0.05em' }}>
                       {r.opponent.toUpperCase()}
                     </span>
-                    <span style={{ fontSize: '0.85em', fontWeight: 900, color: '#ff7a5a' }}>
-                      {oppRawTotal}
+                    <span style={{ fontSize: '0.82em', fontWeight: 900, color: '#ff7a5a' }}>
+                      {r.scratchOpp}
                     </span>
                   </div>
                 )}
 
+                {/* Adjusted (W/ Handicap) Totals */}
+                {(r.adjTotal != null || r.adjOpp != null) && (
+                  <>
+                    <div style={{
+                      fontSize: '0.68em', color: 'var(--smoke)', letterSpacing: '0.1em',
+                      textTransform: 'uppercase', marginBottom: '0.35em', marginTop: '0.6em',
+                      textAlign: 'center', paddingTop: '0.4em', borderTop: '1px solid var(--soft-black)',
+                    }}>
+                      W/ HANDICAP
+                    </div>
+
+                    {r.adjTotal != null && (
+                      <div style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        marginBottom: '0.2em',
+                      }}>
+                        <span style={{ fontSize: '0.72em', fontWeight: 700, color: 'var(--yellow)', letterSpacing: '0.05em' }}>
+                          YOUR TEAM
+                        </span>
+                        <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--yellow)' }}>
+                          {r.adjTotal}
+                        </span>
+                      </div>
+                    )}
+
+                    {r.adjOpp != null && (
+                      <div style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      }}>
+                        <span style={{ fontSize: '0.72em', fontWeight: 700, color: '#ff7a5a', letterSpacing: '0.05em' }}>
+                          {r.opponent.toUpperCase()}
+                        </span>
+                        <span style={{ fontSize: '0.82em', fontWeight: 900, color: '#ff7a5a' }}>
+                          {r.adjOpp}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Glowing point differential */}
                 {showDiff && (
                   <div style={{
                     textAlign: 'center', marginTop: '0.5em',
