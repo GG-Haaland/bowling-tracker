@@ -82,38 +82,56 @@ export default function IntroScreen({
           </div>
         </div>
 
-        {/* Season toggle */}
-        {seasons.length > 1 && (
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: '0.7em',
-            gap: '0.35em',
-          }}>
-            {seasons.map(s => (
-              <button
-                key={s.id}
-                onClick={() => onChangeSeason(s)}
-                style={{
-                  padding: '0.25em 0.65em',
-                  fontSize: '0.62em',
-                  fontWeight: 800,
-                  fontFamily: 'var(--font-body)',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  borderRadius: '0.3em',
-                  border: s.id === season.id ? '2px solid var(--yellow)' : '2px solid var(--soft-black)',
-                  background: s.id === season.id ? 'rgba(255,204,0,0.15)' : 'rgba(0,0,0,0.3)',
-                  color: s.id === season.id ? 'var(--yellow)' : 'var(--smoke)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        )}
+        {/* Season toggle + Playoffs */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: '0.7em',
+          gap: '0.35em',
+          flexWrap: 'wrap',
+        }}>
+          {seasons.map(s => (
+            <button
+              key={s.id}
+              onClick={() => onChangeSeason(s)}
+              style={{
+                padding: '0.25em 0.65em',
+                fontSize: '0.62em',
+                fontWeight: 800,
+                fontFamily: 'var(--font-body)',
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                borderRadius: '0.3em',
+                border: s.id === season.id ? '2px solid var(--yellow)' : '2px solid var(--soft-black)',
+                background: s.id === season.id ? 'rgba(255,204,0,0.15)' : 'rgba(0,0,0,0.3)',
+                color: s.id === season.id ? 'var(--yellow)' : 'var(--smoke)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {s.label}
+            </button>
+          ))}
+          <button
+            onClick={onPlayoffs}
+            style={{
+              padding: '0.25em 0.65em',
+              fontSize: '0.62em',
+              fontWeight: 800,
+              fontFamily: 'var(--font-body)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              borderRadius: '0.3em',
+              border: '2px solid var(--soft-black)',
+              background: 'rgba(0,0,0,0.3)',
+              color: 'var(--smoke)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            PLAYOFFS
+          </button>
+        </div>
 
         {season.isArchive ? (
           <>
@@ -290,30 +308,6 @@ export default function IntroScreen({
             </button>
           </>
         )}
-      </div>
-
-      {/* Playoffs button below the badge */}
-      <div className="intro-badge" style={{ marginTop: '0.6em', padding: 0 }}>
-        <button
-          className="contact-btn"
-          disabled
-          style={{
-            width: '100%',
-            padding: '0.6em 1.5em',
-            fontSize: '0.85em',
-            letterSpacing: '0.15em',
-            fontWeight: 900,
-            opacity: 1,
-            cursor: 'default',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '0.1em',
-          }}
-        >
-          <span>PLAYOFFS</span>
-          <span style={{ fontSize: '0.6em', letterSpacing: '0.2em', opacity: 0.7 }}>COMING SOON</span>
-        </button>
       </div>
 
       <div className="intro-hint">
