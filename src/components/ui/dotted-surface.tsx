@@ -39,7 +39,7 @@ export function DottedSurface() {
     const TOTAL_D = SEGS_Z * SEG_D;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 800, 5500);
+    scene.fog = new THREE.Fog(0x000000, 600, 4500);
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -47,8 +47,8 @@ export function DottedSurface() {
       1,
       15000,
     );
-    camera.position.set(0, 380, 1300);
-    camera.lookAt(0, -80, -800);
+    camera.position.set(0, 350, 1300);
+    camera.lookAt(0, 50, -800);
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -254,9 +254,10 @@ export function DottedSurface() {
         zIndex: -1,
         pointerEvents: 'none',
         backgroundImage: 'url(/lane-backdrop.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundSize: '100% auto',
+        backgroundPosition: 'center top',
         backgroundRepeat: 'no-repeat',
+        backgroundColor: '#000000',
       }}
     />
   );
