@@ -3,20 +3,21 @@ import * as THREE from 'three';
 
 // Bowling lane wood colors — alternating plank tones
 const PLANK_COLORS = [
-  0xdec9a0, // light maple
-  0xd4b97a, // honey
-  0xc9a85e, // golden
-  0xdcc48e, // pale
-  0xc4a460, // amber
-  0xd8c090, // wheat
-  0xcbad6a, // warm
-  0xe0cb98, // cream maple
-  0xd0b070, // caramel
-  0xdbc590, // sandy
+  [0.87, 0.79, 0.63], // light maple
+  [0.83, 0.73, 0.48], // honey
+  [0.79, 0.66, 0.37], // golden
+  [0.86, 0.77, 0.56], // pale
+  [0.77, 0.64, 0.38], // amber
+  [0.85, 0.75, 0.56], // wheat
+  [0.80, 0.68, 0.42], // warm
+  [0.88, 0.80, 0.60], // cream maple
+  [0.82, 0.69, 0.44], // caramel
+  [0.86, 0.77, 0.56], // sandy
+  [0.84, 0.74, 0.50], // tawny
+  [0.89, 0.81, 0.62], // birch
 ];
 
-// Arrow colors (dark lane markers)
-const ARROW_COLOR = 0x4a3520;
+const ARROW_COLOR = 0x3a2815;
 
 export function DottedSurface() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,15 +29,17 @@ export function DottedSurface() {
 
     const container = containerRef.current;
 
-    // Lane grid config
-    const PLANKS = 50;        // number of planks (x axis)
-    const SEGMENTS_Z = 80;    // segments along the lane (z axis)
-    const PLANK_WIDTH = 120;
-    const SEGMENT_DEPTH = 120;
-    const TOTAL_WIDTH = PLANKS * PLANK_WIDTH;
-    const TOTAL_DEPTH = SEGMENTS_Z * SEGMENT_DEPTH;
+    // Lane config — many narrow planks + lots of Z segments for smooth bending
+    const PLANKS = 150;
+    const SEGS_Z = 200;
+    const PLANK_W = 45;
+    const SEG_D = 55;
+    const GAP = 1.5;
+    const TOTAL_W = PLANKS * PLANK_W;
+    const TOTAL_D = SEGS_Z * SEG_D;
 
     const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x1a1a2e, 2500, 8500);
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -44,8 +47,8 @@ export function DottedSurface() {
       1,
       15000,
     );
-    camera.position.set(0, 400, 1400);
-    camera.lookAt(0, -100, -1000);
+    camera.position.set(0, 380, 1300);
+    camera.lookAt(0, -80, -800);
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -53,78 +56,125 @@ export function DottedSurface() {
     renderer.setClearColor(0x000000, 0);
     container.appendChild(renderer.domElement);
 
-    // Soft ambient + directional light for depth
-    const ambient = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambient);
-    const dirLight = new THREE.DirectionalLight(0xfff5e0, 0.5);
-    dirLight.position.set(200, 600, 400);
-    scene.add(dirLight);
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+    const dir = new THREE.DirectionalLight(0xfff5e0, 0.45);
+    dir.position.set(300, 500, 400);
+    scene.add(dir);
 
-    // Build planks as a single merged geometry for performance
-    const plankGeometries: THREE.BufferGeometry[] = [];
-    const plankMeshes: THREE.Mesh[] = [];
+    // Build one large merged geometry for all planks (WAY better perf than 150 meshes)
+    // Each plank is a strip of quads: 2 verts wide × (SEGS_Z+1) verts tall
+    const vertsPerPlank = 2 * (SEGS_Z + 1);
+    const totalVerts = PLANKS * vertsPerPlank;
+    const trisPerPlank = 2 * SEGS_Z; // 2 triangles per quad segment
+    const totalTris = PLANKS * trisPerPlank;
+
+    const positions = new Float32Array(totalVerts * 3);
+    const colors = new Float32Array(totalVerts * 3);
+    const origZ = new Float32Array(totalVerts); // store original Z for wave calc
+    const indices = new Uint32Array(totalTris * 3);
+
+    let vi = 0; // vertex index
+    let ii = 0; // index index
 
     for (let px = 0; px < PLANKS; px++) {
-      const geo = new THREE.PlaneGeometry(
-        PLANK_WIDTH - 2, // slight gap between planks
-        TOTAL_DEPTH,
-        1,
-        SEGMENTS_Z,
-      );
-      geo.rotateX(-Math.PI / 2); // lay flat
+      const xLeft = px * PLANK_W - TOTAL_W / 2 + GAP / 2;
+      const xRight = xLeft + PLANK_W - GAP;
+      const col = PLANK_COLORS[px % PLANK_COLORS.length];
+      // Slight random variation per plank for realism
+      const shade = 0.95 + Math.random() * 0.1;
+      const r = col[0] * shade;
+      const g = col[1] * shade;
+      const b = col[2] * shade;
 
-      // Position each plank
-      const xPos = px * PLANK_WIDTH - TOTAL_WIDTH / 2 + PLANK_WIDTH / 2;
-      geo.translate(xPos, 0, -TOTAL_DEPTH / 2 + TOTAL_DEPTH / 2);
+      const baseVert = vi;
 
-      const colorIdx = px % PLANK_COLORS.length;
-      const color = new THREE.Color(PLANK_COLORS[colorIdx]);
+      for (let sz = 0; sz <= SEGS_Z; sz++) {
+        const z = sz * SEG_D - TOTAL_D / 2;
+        const normZ = sz / SEGS_Z; // 0..1
 
-      const mat = new THREE.MeshLambertMaterial({
-        color,
-        transparent: true,
-        opacity: 0.85,
-        side: THREE.DoubleSide,
-      });
+        // Left vertex
+        positions[vi * 3] = xLeft;
+        positions[vi * 3 + 1] = 0;
+        positions[vi * 3 + 2] = z;
+        colors[vi * 3] = r;
+        colors[vi * 3 + 1] = g;
+        colors[vi * 3 + 2] = b;
+        origZ[vi] = normZ;
+        vi++;
 
-      const mesh = new THREE.Mesh(geo, mat);
-      scene.add(mesh);
-      plankMeshes.push(mesh);
-      plankGeometries.push(geo);
+        // Right vertex
+        positions[vi * 3] = xRight;
+        positions[vi * 3 + 1] = 0;
+        positions[vi * 3 + 2] = z;
+        colors[vi * 3] = r;
+        colors[vi * 3 + 1] = g;
+        colors[vi * 3 + 2] = b;
+        origZ[vi] = normZ;
+        vi++;
+      }
+
+      // Build triangle indices for this plank
+      for (let sz = 0; sz < SEGS_Z; sz++) {
+        const topLeft = baseVert + sz * 2;
+        const topRight = topLeft + 1;
+        const botLeft = topLeft + 2;
+        const botRight = topLeft + 3;
+        // Tri 1
+        indices[ii++] = topLeft;
+        indices[ii++] = botLeft;
+        indices[ii++] = topRight;
+        // Tri 2
+        indices[ii++] = topRight;
+        indices[ii++] = botLeft;
+        indices[ii++] = botRight;
+      }
     }
 
-    // Arrow markers — triangular shapes embedded in the lane
-    // Pattern: 7 arrows in a V formation (like real bowling lane arrows)
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    geometry.computeVertexNormals();
+
+    const material = new THREE.MeshLambertMaterial({
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.88,
+      side: THREE.DoubleSide,
+    });
+
+    const laneMesh = new THREE.Mesh(geometry, material);
+    scene.add(laneMesh);
+
+    // Arrow markers
     const arrowPositions = [
-      // Row 1 (closest) — 4 arrows
       { x: -3, z: 0.3 },
       { x: -1, z: 0.25 },
       { x: 1, z: 0.25 },
       { x: 3, z: 0.3 },
-      // Row 2 — 3 arrows (inner)
       { x: -2, z: 0.4 },
       { x: 0, z: 0.35 },
       { x: 2, z: 0.4 },
     ];
 
     const arrowMeshes: THREE.Mesh[] = [];
-    const arrowGeo = new THREE.ConeGeometry(35, 90, 3);
+    const arrowGeo = new THREE.ConeGeometry(20, 60, 3);
     arrowGeo.rotateX(-Math.PI / 2);
     const arrowMat = new THREE.MeshLambertMaterial({
       color: ARROW_COLOR,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.65,
     });
 
-    // Repeat arrows along the lane length
-    for (let rep = 0; rep < 3; rep++) {
-      const zOffset = rep * TOTAL_DEPTH * 0.35 - TOTAL_DEPTH * 0.2;
+    for (let rep = 0; rep < 4; rep++) {
+      const zOff = rep * TOTAL_D * 0.28 - TOTAL_D * 0.25;
       arrowPositions.forEach(ap => {
         const mesh = new THREE.Mesh(arrowGeo.clone(), arrowMat);
         mesh.position.set(
-          ap.x * PLANK_WIDTH * 1.8,
+          ap.x * PLANK_W * 4,
           2,
-          zOffset + ap.z * TOTAL_DEPTH * 0.15,
+          zOff + ap.z * TOTAL_D * 0.12,
         );
         mesh.rotation.x = -Math.PI / 2;
         scene.add(mesh);
@@ -132,42 +182,42 @@ export function DottedSurface() {
       });
     }
 
-    // Fog for depth fade
-    scene.fog = new THREE.Fog(0x1a1a2e, 3000, 9000);
+    // Store plank X centers for wave calculation
+    const plankCenters: number[] = [];
+    for (let px = 0; px < PLANKS; px++) {
+      plankCenters.push(px * PLANK_W - TOTAL_W / 2 + PLANK_W / 2);
+    }
 
     let count = 0;
 
     function animate() {
       requestAnimationFrame(animate);
 
-      // Wave animation on plank vertices
-      plankGeometries.forEach((geo, px) => {
-        const pos = geo.attributes.position.array as Float32Array;
-        const vertCount = pos.length / 3;
+      const pos = geometry.attributes.position.array as Float32Array;
 
-        for (let v = 0; v < vertCount; v++) {
-          // Get original z position for the wave calculation
-          const origZ = (v % (SEGMENTS_Z + 2)) / (SEGMENTS_Z + 1);
-          const waveY =
-            Math.sin((px * 0.4 + count) * 0.3) * 40 +
-            Math.sin((origZ * 8 + count) * 0.5) * 35;
-          pos[v * 3 + 1] = waveY;
-        }
-        geo.attributes.position.needsUpdate = true;
-        geo.computeVertexNormals();
-      });
+      for (let i = 0; i < totalVerts; i++) {
+        const px = Math.floor(i / vertsPerPlank);
+        const nz = origZ[i];
+        const waveY =
+          Math.sin((px * 0.15 + count) * 0.4) * 35 +
+          Math.sin((nz * 10 + count) * 0.5) * 30;
+        pos[i * 3 + 1] = waveY;
+      }
+      geometry.attributes.position.needsUpdate = true;
+      geometry.computeVertexNormals();
 
-      // Animate arrows to follow the wave
+      // Arrows follow wave
       arrowMeshes.forEach(arrow => {
-        const ax = arrow.position.x / PLANK_WIDTH;
-        const az = (arrow.position.z + TOTAL_DEPTH / 2) / TOTAL_DEPTH;
+        const normX = (arrow.position.x + TOTAL_W / 2) / TOTAL_W;
+        const px = normX * PLANKS;
+        const normAZ = (arrow.position.z + TOTAL_D / 2) / TOTAL_D;
         arrow.position.y =
-          Math.sin((ax * 0.4 + count) * 0.3) * 40 +
-          Math.sin((az * 8 + count) * 0.5) * 35 + 3;
+          Math.sin((px * 0.15 + count) * 0.4) * 35 +
+          Math.sin((normAZ * 10 + count) * 0.5) * 30 + 4;
       });
 
       renderer.render(scene, camera);
-      count += 0.07;
+      count += 0.06;
     }
 
     animate();
