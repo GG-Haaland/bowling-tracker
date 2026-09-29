@@ -39,7 +39,7 @@ export function DottedSurface() {
     const TOTAL_D = SEGS_Z * SEG_D;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x000000, 2500, 8500);
+    scene.fog = new THREE.Fog(0x000000, 800, 5500);
 
     const camera = new THREE.PerspectiveCamera(
       60,
