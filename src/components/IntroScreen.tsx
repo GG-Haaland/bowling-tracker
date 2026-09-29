@@ -51,7 +51,35 @@ export default function IntroScreen({
           <ScrewIcon />
         </div>
 
-        <div className="intro-screen-box">
+        <div className="intro-screen-box" style={{ position: 'relative', overflow: 'hidden' }}>
+          {/* YouTube video background */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 1,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+          }}>
+            <iframe
+              src="https://www.youtube.com/embed/iLiT9HXes6c?si=Gm7OrlNrpN8wwoML&controls=0&start=13&autoplay=1&mute=1&loop=1&playlist=iLiT9HXes6c&showinfo=0&rel=0&modestbranding=1"
+              title="Bowling video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                width: '300%',
+                height: '300%',
+                transform: 'translate(-50%, -50%)',
+                border: 'none',
+                opacity: 0.6,
+              }}
+            />
+          </div>
           <img
             src="/apple-touch-icon.png"
             alt="A Bowling Club"
@@ -64,7 +92,7 @@ export default function IntroScreen({
               zIndex: 10,
             }}
           />
-          <p>
+          <p style={{ position: 'relative', zIndex: 10 }}>
             {loading ? 'Loading data...' : 'Select your team and week'}
           </p>
         </div>
