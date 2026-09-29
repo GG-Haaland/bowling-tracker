@@ -64,7 +64,7 @@ export default function IntroScreen({
             overflow: 'hidden',
           }}>
             <iframe
-              src="https://www.youtube.com/embed/iLiT9HXes6c?si=Gm7OrlNrpN8wwoML&controls=0&start=21&autoplay=1&mute=1&loop=1&playlist=iLiT9HXes6c&showinfo=0&rel=0&modestbranding=1"
+              src="https://www.youtube.com/embed/iLiT9HXes6c?si=Gm7OrlNrpN8wwoML&controls=0&start=23&autoplay=1&mute=1&loop=1&playlist=iLiT9HXes6c&showinfo=0&rel=0&modestbranding=1"
               title="Bowling video"
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
