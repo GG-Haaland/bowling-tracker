@@ -3,8 +3,8 @@ import type { TeamGame } from '@/lib/types';
 import type { SheetState } from '@/hooks/useSheetData';
 import MatchupPicker from '@/components/MatchupPicker';
 import RosterCard from '@/components/RosterCard';
-import HcpCalcCard from '@/components/HcpCalcCard';
 import HandicapEdgeCard from '@/components/HandicapEdgeCard';
+import PredictionsCard from '@/components/PredictionsCard';
 import WeekScorecard from '@/components/WeekScorecard';
 import TopBowls from '@/components/TopBowls';
 import DataStatusCard from '@/components/DataStatusCard';
@@ -258,7 +258,7 @@ export default function DashboardPage({
       onClick={onNavigateHandicap}
       style={{ width: '100%', padding: '0.6em', fontSize: '0.88em' }}
     >
-      HANDICAP SHEET
+      TEAMS / HANDICAP
     </button>
   );
 
@@ -351,8 +351,8 @@ export default function DashboardPage({
             </div>
           )}
 
-          {/* 6. HCP CALCULATOR */}
-          <HcpCalcCard
+          {/* 6. PREDICTIONS */}
+          <PredictionsCard
             selectedPlayersA={selectedPlayersA}
             selectedPlayersB={selectedPlayersB}
             teamAName={teamAName}

@@ -96,8 +96,8 @@ export default function HandicapPage({ roster, selectedTeamName, loadTeamData, o
       <button className="back-btn" onClick={onBack}>&#9664; BACK</button>
 
       <div className="title">
-        <h1>HANDICAP SHEET</h1>
-        <p>Select a team to view player handicaps</p>
+        <h1>TEAMS / HANDICAP</h1>
+        <p>Select a team to view players</p>
       </div>
 
       <select value={teamName} onChange={e => setTeamName(e.target.value)}>
@@ -133,7 +133,7 @@ export default function HandicapPage({ roster, selectedTeamName, loadTeamData, o
             {players.map((p, i) => (
               <div key={p.name} style={{
                 display: 'grid', gridTemplateColumns: '1fr auto auto auto auto',
-                background: i % 2 === 0 ? 'var(--dark-black)' : 'rgba(37,37,47,0.5)',
+                background: i % 2 === 0 ? 'var(--dark-black)' : '#25252f',
                 borderBottom: i < players.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
               }}>
                 <div style={{ padding: '0.45em 0.7em', fontFamily: 'var(--font-body)', fontSize: '0.85em', color: 'var(--white-smoke)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
