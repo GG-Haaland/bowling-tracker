@@ -172,6 +172,7 @@ export default function App() {
         loadTeamData={sheetData.loadTeamData}
         onBack={view === 'teams' ? handleBackFromTeams : handleBackFromHandicap}
         teamNames={season.teamNames}
+        standings={sheetData.standings}
       />
     );
   }

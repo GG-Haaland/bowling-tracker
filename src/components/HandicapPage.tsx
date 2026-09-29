@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Player, TeamData } from '@/lib/types';
+import type { Player, TeamData, StandingsEntry } from '@/lib/types';
 import { TEAM_GIDS, normStr, normTeam } from '@/lib/constants';
 
 interface HandicapPageProps {
@@ -8,6 +8,7 @@ interface HandicapPageProps {
   loadTeamData: (name: string) => Promise<TeamData | null>;
   onBack: () => void;
   teamNames?: string[];
+  standings?: StandingsEntry[];
 }
 
 interface HcpPlayer {
@@ -20,7 +21,7 @@ interface HcpPlayer {
   winPct: number | null;
 }
 
-export default function HandicapPage({ roster, selectedTeamName, loadTeamData, onBack, teamNames }: HandicapPageProps) {
+export default function HandicapPage({ roster, selectedTeamName, loadTeamData, onBack, teamNames, standings = [] }: HandicapPageProps) {
   const [teamName, setTeamName] = useState(selectedTeamName || '');
   const [players, setPlayers] = useState<HcpPlayer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,6 +82,8 @@ export default function HandicapPage({ roster, selectedTeamName, loadTeamData, o
         .filter(p => normTeam(p.team) === normTeam(teamName) && p.avg > 0 && !existing.has(normStr(p.name)))
         .map(p => ({ name: p.name, avg: Math.round(p.avg), handicap: Math.round(p.handicap), wins: 0, losses: 0, ties: 0, winPct: null as number | null }));
       result = [...result, ...rosterPlayers];
+      // Remove Substitute entries
+      result = result.filter(p => p.name.toLowerCase() !== 'substitute');
       result.sort((a, b) => b.avg - a.avg);
 
       setPlayers(result);
@@ -91,19 +94,54 @@ export default function HandicapPage({ roster, selectedTeamName, loadTeamData, o
     });
   }, [teamName, roster, loadTeamData]);
 
+  // Find team record from standings
+  const teamRecord = teamName ? standings.find(
+    s => s.team.toLowerCase() === teamName.toLowerCase()
+  ) : null;
+
   return (
     <div className="handicap-page dot-bg">
       <button className="back-btn" onClick={onBack}>&#9664; BACK</button>
 
-      <div className="title">
-        <h1>TEAMS / HANDICAP</h1>
-        <p>Select a team to view players</p>
+      <div style={{
+        textAlign: 'center', marginBottom: '1em',
+        background: 'var(--dark-black)', borderRadius: '0.5em',
+        padding: '0.8em 1em', position: 'relative', zIndex: 2,
+      }}>
+        <h1 style={{
+          fontFamily: 'var(--font-main)', fontSize: '1.4em', fontWeight: 900,
+          color: 'var(--yellow)', letterSpacing: '0.1em', textTransform: 'uppercase',
+          margin: 0,
+        }}>TEAMS / HANDICAP</h1>
+        <p style={{
+          fontFamily: 'var(--font-body)', fontSize: '0.78em', color: 'var(--smoke)',
+          marginTop: '0.2em', margin: '0.2em 0 0',
+        }}>Select a team to view players</p>
       </div>
 
       <select value={teamName} onChange={e => setTeamName(e.target.value)}>
         <option value="">— SELECT TEAM —</option>
         {teams.map(t => <option key={t} value={t}>{t}</option>)}
       </select>
+
+      {/* Team record */}
+      {teamRecord && (
+        <div style={{
+          textAlign: 'center', marginBottom: '0.8em',
+          background: 'var(--dark-black)', borderRadius: '0.4em',
+          padding: '0.5em 0.8em',
+        }}>
+          <span style={{ fontSize: '0.82em', fontWeight: 900, color: 'var(--white-smoke)', letterSpacing: '0.06em' }}>
+            {teamName.toUpperCase()}
+          </span>
+          <span style={{ fontSize: '0.78em', color: 'var(--smoke)', marginLeft: '0.6em' }}>
+            {teamRecord.wins}-{teamRecord.losses}{teamRecord.ties > 0 ? '-' + teamRecord.ties : ''}
+          </span>
+          <span style={{ fontSize: '0.78em', color: 'var(--yellow)', marginLeft: '0.6em', fontWeight: 800 }}>
+            ({teamRecord.place}{teamRecord.place === 1 ? 'st' : teamRecord.place === 2 ? 'nd' : teamRecord.place === 3 ? 'rd' : 'th'})
+          </span>
+        </div>
+      )}
 
       {!teamName ? (
         <div style={{ color: 'var(--soft-black)', fontSize: '0.85em', textAlign: 'center', padding: '2em 0', fontFamily: 'var(--font-body)' }}>
