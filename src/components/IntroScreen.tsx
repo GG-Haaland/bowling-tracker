@@ -80,18 +80,6 @@ export default function IntroScreen({
               }}
             />
           </div>
-          <img
-            src="/apple-touch-icon.png"
-            alt="A Bowling Club"
-            style={{
-              width: '180px',
-              height: '180px',
-              display: 'block',
-              margin: '-60px auto 0.4em',
-              position: 'relative',
-              zIndex: 10,
-            }}
-          />
         </div>
 
         {/* Season toggle */}
