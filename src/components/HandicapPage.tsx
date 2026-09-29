@@ -81,7 +81,7 @@ export default function HandicapPage({ roster, selectedTeamName, loadTeamData, o
         .filter(p => normTeam(p.team) === normTeam(teamName) && p.avg > 0 && !existing.has(normStr(p.name)))
         .map(p => ({ name: p.name, avg: Math.round(p.avg), handicap: Math.round(p.handicap), wins: 0, losses: 0, ties: 0, winPct: null as number | null }));
       result = [...result, ...rosterPlayers];
-      result.sort((a, b) => b.handicap - a.handicap);
+      result.sort((a, b) => b.avg - a.avg);
 
       setPlayers(result);
       setLoading(false);
@@ -121,35 +121,35 @@ export default function HandicapPage({ roster, selectedTeamName, loadTeamData, o
         <>
           <div style={{ border: '1px solid var(--soft-black)', borderRadius: '0.4em', overflow: 'hidden' }}>
             {/* Header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto', background: 'var(--medium-black)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 3em 3em 3.5em 3em', background: 'var(--medium-black)' }}>
               <div style={{ padding: '0.5em 0.7em', fontSize: '0.72em', fontWeight: 900, color: 'var(--smoke)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>PLAYER</div>
-              <div style={{ padding: '0.5em 0.5em', fontSize: '0.72em', fontWeight: 900, color: 'var(--smoke)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', minWidth: '2.8em' }}>AVG</div>
-              <div style={{ padding: '0.5em 0.5em', fontSize: '0.72em', fontWeight: 900, color: 'var(--yellow)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', minWidth: '2.8em' }}>HCP</div>
-              <div style={{ padding: '0.5em 0.5em', fontSize: '0.72em', fontWeight: 900, color: 'var(--smoke)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', minWidth: '3.2em' }}>W-L</div>
-              <div style={{ padding: '0.5em 0.5em', fontSize: '0.72em', fontWeight: 900, color: 'var(--light-blue)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center', minWidth: '2.8em' }}>W%</div>
+              <div style={{ padding: '0.5em 0', fontSize: '0.72em', fontWeight: 900, color: 'var(--smoke)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center' }}>AVG</div>
+              <div style={{ padding: '0.5em 0', fontSize: '0.72em', fontWeight: 900, color: 'var(--yellow)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center' }}>HCP</div>
+              <div style={{ padding: '0.5em 0', fontSize: '0.72em', fontWeight: 900, color: 'var(--smoke)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center' }}>W-L</div>
+              <div style={{ padding: '0.5em 0.4em 0.5em 0', fontSize: '0.72em', fontWeight: 900, color: 'var(--light-blue)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'center' }}>W%</div>
             </div>
 
             {/* Rows */}
             {players.map((p, i) => (
               <div key={p.name} style={{
-                display: 'grid', gridTemplateColumns: '1fr auto auto auto auto',
+                display: 'grid', gridTemplateColumns: '1fr 3em 3em 3.5em 3em',
                 background: i % 2 === 0 ? 'var(--dark-black)' : '#25252f',
                 borderBottom: i < players.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none',
               }}>
                 <div style={{ padding: '0.45em 0.7em', fontFamily: 'var(--font-body)', fontSize: '0.85em', color: 'var(--white-smoke)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {p.name}
                 </div>
-                <div style={{ padding: '0.45em 0.5em', fontSize: '0.85em', color: 'var(--smoke)', fontWeight: 700, textAlign: 'center', minWidth: '2.8em' }}>
+                <div style={{ padding: '0.45em 0', fontSize: '0.85em', color: 'var(--smoke)', fontWeight: 700, textAlign: 'center' }}>
                   {p.avg}
                 </div>
-                <div style={{ padding: '0.45em 0.5em', fontSize: '0.85em', color: 'var(--green)', fontWeight: 900, textAlign: 'center', minWidth: '2.8em' }}>
+                <div style={{ padding: '0.45em 0', fontSize: '0.85em', color: 'var(--green)', fontWeight: 900, textAlign: 'center' }}>
                   {p.handicap}
                 </div>
-                <div style={{ padding: '0.45em 0.5em', fontSize: '0.85em', color: 'var(--smoke)', fontWeight: 700, textAlign: 'center', minWidth: '3.2em' }}>
+                <div style={{ padding: '0.45em 0', fontSize: '0.85em', color: 'var(--smoke)', fontWeight: 700, textAlign: 'center' }}>
                   {p.wins + p.losses + p.ties > 0 ? p.wins + '-' + p.losses + (p.ties > 0 ? '-' + p.ties : '') : '—'}
                 </div>
                 <div style={{
-                  padding: '0.45em 0.5em', fontSize: '0.85em', fontWeight: 900, textAlign: 'center', minWidth: '2.8em',
+                  padding: '0.45em 0.4em 0.45em 0', fontSize: '0.85em', fontWeight: 900, textAlign: 'center',
                   color: p.winPct != null ? (p.winPct >= 0.5 ? 'var(--green)' : 'var(--red)') : 'var(--soft-black)',
                 }}>
                   {p.winPct != null ? (p.winPct * 100).toFixed(0) + '%' : '—'}
