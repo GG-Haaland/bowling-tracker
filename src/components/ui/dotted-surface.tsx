@@ -39,7 +39,7 @@ export function DottedSurface() {
     const TOTAL_D = SEGS_Z * SEG_D;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x1a1a2e, 2500, 8500);
+    scene.fog = new THREE.Fog(0x000000, 2500, 8500);
 
     const camera = new THREE.PerspectiveCamera(
       60,
@@ -145,6 +145,14 @@ export function DottedSurface() {
 
     const laneMesh = new THREE.Mesh(geometry, material);
     scene.add(laneMesh);
+
+    // Black floor underneath the lane so the backdrop doesn't show through
+    const floorGeo = new THREE.PlaneGeometry(TOTAL_W * 1.5, TOTAL_D * 1.5);
+    floorGeo.rotateX(-Math.PI / 2);
+    const floorMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.position.y = -80;
+    scene.add(floor);
 
     // Arrow markers
     const arrowPositions = [
