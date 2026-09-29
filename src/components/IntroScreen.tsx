@@ -80,38 +80,18 @@ export default function IntroScreen({
               }}
             />
           </div>
-          <button
-            onClick={onEnter}
-            disabled={loading}
+          <img
+            src="/apple-touch-icon.png"
+            alt="A Bowling Club"
             style={{
-              background: 'none',
-              border: 'none',
-              padding: 0,
-              cursor: loading ? 'default' : 'pointer',
+              width: '180px',
+              height: '180px',
               display: 'block',
               margin: '-60px auto 0.4em',
               position: 'relative',
               zIndex: 10,
-              opacity: loading ? 0.5 : 1,
-              transition: 'transform 0.1s, filter 0.1s',
             }}
-            onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-3px)'; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
-            onMouseDown={e => { if (!loading) e.currentTarget.style.transform = 'translateY(4px)'; }}
-            onMouseUp={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-3px)'; }}
-          >
-            <img
-              src="/apple-touch-icon.png"
-              alt="A Bowling Club — Click to enter"
-              style={{
-                width: '180px',
-                height: '180px',
-                display: 'block',
-                filter: 'drop-shadow(0 6px 0 rgba(0,0,0,0.5)) drop-shadow(0 0 20px rgba(236,178,54,0.3))',
-                transition: 'filter 0.1s',
-              }}
-            />
-          </button>
+          />
         </div>
 
         {/* Season toggle */}
@@ -173,6 +153,38 @@ export default function IntroScreen({
               </div>
             </div>
 
+            {/* Archive: Logo enter button */}
+            <button
+              onClick={onEnter}
+              disabled={loading}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: loading ? 'default' : 'pointer',
+                display: 'block',
+                margin: '0 auto',
+                position: 'relative',
+                opacity: loading ? 0.5 : 1,
+                transition: 'transform 0.1s',
+              }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+              onMouseDown={e => { if (!loading) e.currentTarget.style.transform = 'translateY(4px)'; }}
+              onMouseUp={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            >
+              <img
+                src="/apple-touch-icon.png"
+                alt="Click to enter"
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  display: 'block',
+                  filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(236,178,54,0.3))',
+                }}
+              />
+              <span className="click-bubble">CLICK</span>
+            </button>
           </>
         ) : (
           <>
@@ -256,6 +268,38 @@ export default function IntroScreen({
               <button className="week-nav-btn" onClick={() => onChangeWeek(1)} style={{ fontSize: '0.75em' }}>&#9654;</button>
             </div>
 
+            {/* Live: Logo enter button */}
+            <button
+              onClick={onEnter}
+              disabled={loading}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: loading ? 'default' : 'pointer',
+                display: 'block',
+                margin: '0 auto',
+                position: 'relative',
+                opacity: loading ? 0.5 : 1,
+                transition: 'transform 0.1s',
+              }}
+              onMouseEnter={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+              onMouseDown={e => { if (!loading) e.currentTarget.style.transform = 'translateY(4px)'; }}
+              onMouseUp={e => { if (!loading) e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            >
+              <img
+                src="/apple-touch-icon.png"
+                alt="Click to enter"
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  display: 'block',
+                  filter: 'drop-shadow(0 4px 0 rgba(0,0,0,0.5)) drop-shadow(0 0 12px rgba(236,178,54,0.3))',
+                }}
+              />
+              <span className="click-bubble">CLICK</span>
+            </button>
           </>
         )}
       </div>
