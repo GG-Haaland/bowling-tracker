@@ -254,8 +254,8 @@ export function DottedSurface() {
         zIndex: -1,
         pointerEvents: 'none',
         backgroundImage: 'url(/lane-backdrop.png)',
-        backgroundSize: '100% auto',
-        backgroundPosition: 'center top',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 20%',
         backgroundRepeat: 'no-repeat',
         backgroundColor: '#000000',
       }}
