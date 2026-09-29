@@ -38,10 +38,10 @@ body {
 
 /* ─── DOT BACKGROUND (shared between intro & dashboard) */
 .dot-bg {
-  background-image:
-    radial-gradient(circle, rgba(229,229,229,0.04) 20%, transparent 10%),
-    radial-gradient(circle, rgba(229,229,229,0.04) 20%, transparent 10%);
-  background-size: 13px 13px;
+  background-image: url('/bowling-balls-bg.jpg');
+  background-size: 300px;
+  background-repeat: repeat;
+  background-position: center top;
 }
 
 /* ─── INTRO SCREEN ──────────────────────────────────── */
