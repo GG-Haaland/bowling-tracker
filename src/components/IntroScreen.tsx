@@ -112,9 +112,6 @@ export default function IntroScreen({
               }}
             />
           </button>
-          <p style={{ position: 'relative', zIndex: 10 }}>
-            {loading ? 'Loading data...' : 'Select your team and week'}
-          </p>
         </div>
 
         {/* Season toggle */}
