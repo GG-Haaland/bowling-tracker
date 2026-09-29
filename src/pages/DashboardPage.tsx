@@ -312,8 +312,8 @@ export default function DashboardPage({
 
   /* ═════════════════════════════════════════════
      FUTURE WEEK LAYOUT
-     NAV BAR → YOUR TEAM → WEEK SELECTOR → HANDICAP EDGE →
-     MATCHUP PICKER → PLAYER CARDS → HCP CALCULATOR → DATA STATUS
+     NAV BAR → YOUR TEAM → WEEK SELECTOR → MATCHUP PICKER →
+     PLAYER CARDS → HANDICAP EDGE → PREDICTIONS → END GAME
      ═════════════════════════════════════════════ */
   if (!isPastWeek) {
     return (
@@ -329,19 +329,10 @@ export default function DashboardPage({
           {/* 2. WEEK SELECTOR */}
           {weekSelector}
 
-          {/* 3. HANDICAP EDGE */}
-          <HandicapEdgeCard
-            selectedPlayersA={selectedPlayersA}
-            selectedPlayersB={selectedPlayersB}
-            teamAName={teamAName}
-            teamBName={teamBName}
-            roster={sheetData.roster}
-          />
-
-          {/* 4. MATCHUP PICKER */}
+          {/* 3. MATCHUP PICKER */}
           {matchupPicker}
 
-          {/* 5. PLAYER CARDS (only after matchup selected) */}
+          {/* 4. PLAYER CARDS (only after matchup selected) */}
           {matchupSelected ? (
             <>
               <RosterCard
@@ -372,6 +363,15 @@ export default function DashboardPage({
             </div>
           )}
 
+          {/* 5. HANDICAP EDGE */}
+          <HandicapEdgeCard
+            selectedPlayersA={selectedPlayersA}
+            selectedPlayersB={selectedPlayersB}
+            teamAName={teamAName}
+            teamBName={teamBName}
+            roster={sheetData.roster}
+          />
+
           {/* 6. PREDICTIONS */}
           <PredictionsCard
             selectedPlayersA={selectedPlayersA}
@@ -380,6 +380,7 @@ export default function DashboardPage({
             teamBName={teamBName}
             roster={sheetData.roster}
           />
+
           {/* 7. END GAME */}
           <EndGameCard
             selectedPlayersA={selectedPlayersA}
@@ -388,9 +389,6 @@ export default function DashboardPage({
             teamBName={teamBName}
             roster={sheetData.roster}
           />
-
-          {/* 8. DATA STATUS */}
-          {dataStatus}
         </div>
       </div>
     );
