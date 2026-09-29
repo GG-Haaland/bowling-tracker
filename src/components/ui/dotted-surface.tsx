@@ -47,8 +47,8 @@ export function DottedSurface() {
       1,
       15000,
     );
-    camera.position.set(0, 350, 1300);
-    camera.lookAt(0, 50, -800);
+    camera.position.set(0, 300, 1300);
+    camera.lookAt(0, 150, -800);
 
     const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -253,10 +253,6 @@ export function DottedSurface() {
         bottom: 0,
         zIndex: -1,
         pointerEvents: 'none',
-        backgroundImage: 'url(/lane-backdrop.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center 20%',
-        backgroundRepeat: 'no-repeat',
         backgroundColor: '#000000',
       }}
     />
