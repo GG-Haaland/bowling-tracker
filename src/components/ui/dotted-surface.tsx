@@ -190,11 +190,140 @@ export function DottedSurface() {
 
     let count = 0;
 
-    function animate() {
-      requestAnimationFrame(animate);
+    const onResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
 
+    // ── Psychedelic wave backdrop (2D canvas behind the 3D lane) ──
+    const bgCanvas = document.createElement('canvas');
+    bgCanvas.style.position = 'absolute';
+    bgCanvas.style.top = '0';
+    bgCanvas.style.left = '0';
+    bgCanvas.style.width = '100%';
+    bgCanvas.style.height = '100%';
+    bgCanvas.style.zIndex = '-1';
+    container.insertBefore(bgCanvas, container.firstChild);
+
+    const bgCtx = bgCanvas.getContext('2d')!;
+    const DARK = '#1a1a2e';
+    const CREAM = '#e8dcc8';
+
+    // Pre-compute bowling pin positions (scattered)
+    const pinPositions: { x: number; y: number; size: number }[] = [];
+    for (let i = 0; i < 12; i++) {
+      pinPositions.push({
+        x: Math.random(),
+        y: Math.random(),
+        size: 12 + Math.random() * 10,
+      });
+    }
+
+    function drawPin(ctx: CanvasRenderingContext2D, cx: number, cy: number, s: number, color: string) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      // Body (bottom ellipse)
+      ctx.ellipse(cx, cy + s * 0.3, s * 0.35, s * 0.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Neck
+      ctx.beginPath();
+      ctx.ellipse(cx, cy - s * 0.25, s * 0.15, s * 0.25, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Head
+      ctx.beginPath();
+      ctx.arc(cx, cy - s * 0.55, s * 0.2, 0, Math.PI * 2);
+      ctx.fill();
+      // Stripe
+      ctx.strokeStyle = color === CREAM ? '#cc3333' : '#882222';
+      ctx.lineWidth = s * 0.06;
+      ctx.beginPath();
+      ctx.moveTo(cx - s * 0.18, cy - s * 0.35);
+      ctx.lineTo(cx + s * 0.18, cy - s * 0.35);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx - s * 0.16, cy - s * 0.42);
+      ctx.lineTo(cx + s * 0.16, cy - s * 0.42);
+      ctx.stroke();
+    }
+
+    let bgCount = 0;
+
+    function animateBg() {
+      const w = bgCanvas.width;
+      const h = bgCanvas.height;
+
+      // Fill dark base
+      bgCtx.fillStyle = DARK;
+      bgCtx.fillRect(0, 0, w, h);
+
+      // Draw animated wavy stripes
+      const stripeCount = 30;
+      const stripeWidth = h / stripeCount;
+
+      for (let s = 0; s < stripeCount; s++) {
+        if (s % 2 === 0) continue; // only draw cream stripes (dark is the base)
+        bgCtx.beginPath();
+        bgCtx.fillStyle = CREAM;
+
+        const baseY = s * stripeWidth;
+
+        bgCtx.moveTo(0, baseY);
+        for (let x = 0; x <= w; x += 4) {
+          const nx = x / w;
+          const ns = s / stripeCount;
+          const wave =
+            Math.sin((nx * 6 + bgCount * 0.8 + ns * 4) * 1.0) * stripeWidth * 0.6 +
+            Math.sin((nx * 3 - bgCount * 0.5 + ns * 2) * 1.5) * stripeWidth * 0.4 +
+            Math.sin((ns * 8 + bgCount * 0.3) * 0.8) * stripeWidth * 0.3;
+          bgCtx.lineTo(x, baseY + wave);
+        }
+        // Close bottom edge of stripe
+        for (let x = w; x >= 0; x -= 4) {
+          const nx = x / w;
+          const ns = s / stripeCount;
+          const wave =
+            Math.sin((nx * 6 + bgCount * 0.8 + ns * 4) * 1.0) * stripeWidth * 0.6 +
+            Math.sin((nx * 3 - bgCount * 0.5 + ns * 2) * 1.5) * stripeWidth * 0.4 +
+            Math.sin((ns * 8 + bgCount * 0.3) * 0.8) * stripeWidth * 0.3;
+          bgCtx.lineTo(x, baseY + stripeWidth + wave);
+        }
+        bgCtx.closePath();
+        bgCtx.fill();
+      }
+
+      // Draw bowling pins
+      pinPositions.forEach(pin => {
+        const px = pin.x * w;
+        const baseY = pin.y * h;
+        const wave = Math.sin((pin.x * 6 + bgCount * 0.8 + pin.y * 4)) * 20 +
+                     Math.sin((pin.x * 3 - bgCount * 0.5 + pin.y * 2) * 1.5) * 15;
+        const py = baseY + wave;
+        // Determine if pin is on dark or cream stripe
+        const stripeIdx = Math.floor((baseY / h) * stripeCount);
+        const pinColor = stripeIdx % 2 === 0 ? CREAM : DARK;
+        drawPin(bgCtx, px, py, pin.size, pinColor);
+      });
+
+      bgCount += 0.012;
+    }
+
+    function resizeBgCanvas() {
+      bgCanvas.width = window.innerWidth * Math.min(window.devicePixelRatio, 2);
+      bgCanvas.height = window.innerHeight * Math.min(window.devicePixelRatio, 2);
+      bgCtx.scale(
+        Math.min(window.devicePixelRatio, 2),
+        Math.min(window.devicePixelRatio, 2)
+      );
+    }
+    resizeBgCanvas();
+
+    // Combine both animations
+    function combinedAnimate() {
+      requestAnimationFrame(combinedAnimate);
+      animateBg();
+      // Run the 3D lane animation inline
       const pos = geometry.attributes.position.array as Float32Array;
-
       for (let i = 0; i < totalVerts; i++) {
         const px = Math.floor(i / vertsPerPlank);
         const nz = origZ[i];
@@ -205,32 +334,28 @@ export function DottedSurface() {
       }
       geometry.attributes.position.needsUpdate = true;
       geometry.computeVertexNormals();
-
-      // Arrows follow wave
       arrowMeshes.forEach(arrow => {
         const normX = (arrow.position.x + TOTAL_W / 2) / TOTAL_W;
-        const px = normX * PLANKS;
+        const apx = normX * PLANKS;
         const normAZ = (arrow.position.z + TOTAL_D / 2) / TOTAL_D;
         arrow.position.y =
-          Math.sin((px * 0.15 + count) * 0.4) * 35 +
+          Math.sin((apx * 0.15 + count) * 0.4) * 35 +
           Math.sin((normAZ * 10 + count) * 0.5) * 30 + 4;
       });
-
       renderer.render(scene, camera);
       count += 0.06;
     }
 
-    animate();
+    combinedAnimate();
 
-    const onResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    const combinedResize = () => {
+      onResize();
+      resizeBgCanvas();
     };
-    window.addEventListener('resize', onResize);
+    window.addEventListener('resize', combinedResize);
 
     return () => {
-      window.removeEventListener('resize', onResize);
+      window.removeEventListener('resize', combinedResize);
       renderer.dispose();
     };
   }, []);
