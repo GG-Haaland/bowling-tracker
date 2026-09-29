@@ -38,11 +38,25 @@ body {
 
 /* ─── DOT BACKGROUND (shared between intro & dashboard) */
 .dot-bg {
+  position: relative;
+}
+.dot-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
   background-image: url('/bowling-balls-bg.jpg');
   background-size: 300px;
   background-repeat: repeat;
   background-position: center top;
-  background-attachment: fixed;
+  pointer-events: none;
+}
+.dot-bg > * {
+  position: relative;
+  z-index: 1;
 }
 
 /* ─── INTRO SCREEN ──────────────────────────────────── */
