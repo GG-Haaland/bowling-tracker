@@ -49,9 +49,9 @@ body {
   bottom: 0;
   z-index: 0;
   background-image: url('/bowling-balls-bg.jpg');
-  background-size: 300px;
-  background-repeat: repeat;
-  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
   pointer-events: none;
 }
 .dot-bg > * {
