@@ -242,19 +242,28 @@ export default function IntroScreen({
       </div>
 
       {/* Playoffs button below the badge */}
-      <button
-        className="contact-btn"
-        onClick={onPlayoffs}
-        style={{
-          marginTop: '1em',
-          padding: '0.7em 1.5em',
-          fontSize: '0.85em',
-          letterSpacing: '0.15em',
-          fontWeight: 900,
-        }}
-      >
-        PLAYOFFS
-      </button>
+      <div className="intro-badge" style={{ marginTop: '0.6em', padding: 0 }}>
+        <button
+          className="contact-btn"
+          disabled
+          style={{
+            width: '100%',
+            padding: '0.6em 1.5em',
+            fontSize: '0.85em',
+            letterSpacing: '0.15em',
+            fontWeight: 900,
+            opacity: 0.45,
+            cursor: 'not-allowed',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.1em',
+          }}
+        >
+          <span>PLAYOFFS</span>
+          <span style={{ fontSize: '0.6em', letterSpacing: '0.2em', opacity: 0.7 }}>COMING SOON</span>
+        </button>
+      </div>
 
       <div className="intro-hint">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
