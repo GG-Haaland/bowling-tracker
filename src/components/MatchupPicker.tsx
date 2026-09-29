@@ -103,12 +103,12 @@ export default function MatchupPicker({
                 key={i}
                 className={`game-select-btn ${activeGameIdx === i ? 'active' : ''}`}
                 onClick={() => handleGameClick(i)}
-                style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 1fr 2fr', gap: '0.5em', alignItems: 'center', textAlign: 'left' }}
+                style={{ display: 'grid', gridTemplateColumns: '5.2em 4.5em 3.5em 1fr', alignItems: 'center', textAlign: 'left' }}
               >
                 <span style={{ color: 'var(--yellow)', whiteSpace: 'nowrap' }}>GAME {i + 1}</span>
                 <span style={{ color: 'var(--smoke)', fontSize: '0.85em', textAlign: 'center' }}>{g.lane}</span>
                 <span style={{ color: 'var(--smoke)', fontSize: '0.85em', textAlign: 'center' }}>{g.time}</span>
-                <span style={{ color: 'var(--light-blue)', textAlign: 'right' }}>vs {g.opponent}</span>
+                <span style={{ color: 'var(--light-blue)', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>vs {g.opponent}</span>
               </button>
             ))
           )}
