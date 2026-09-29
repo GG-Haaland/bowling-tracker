@@ -1,4 +1,5 @@
 import type { Player, TeamPlayer, TeamData, GameRow, WeekSchedule, TimeSlot, StandingsEntry, TopScore } from './types';
+import { displayTeamName } from './constants';
 
 // ── CSV Line Parser (handles quoted fields with embedded commas) ────────────
 export function parseCSVLine(line: string): string[] {
@@ -44,7 +45,7 @@ export function parseRosterCSV(csv: string): Player[] {
   return lines.slice(headerIdx + 1).filter(l => l.trim()).map(line => {
     const parts = parseCSVLine(line);
     const name = (parts[nameIdx] || '').trim();
-    const team = teamIdx >= 0 ? (parts[teamIdx] || '').trim() : '';
+    const team = teamIdx >= 0 ? displayTeamName((parts[teamIdx] || '').trim()) : '';
     const avg  = avgIdx >= 0 ? (parseFloat(parts[avgIdx]) || 0) : 0;
     const handicap = Math.max(0, Math.floor((200 - avg) * 0.70));
     return { name, team, avg, handicap };
@@ -175,7 +176,7 @@ export function parseTeamTab(csv: string): TeamData | null {
       date: (row[2] || '').trim(),
       time: (row[3] || '').trim(),
       lane: (row[4] || '').trim(),
-      opponent,
+      opponent: displayTeamName(opponent),
       scores,
       wlt: wltCol >= 0 ? (row[wltCol] || '').trim() : '',
       scratchTotal: parseNum(scratchTotalCol),
@@ -213,7 +214,7 @@ export function parseTeamTab(csv: string): TeamData | null {
   }));
 
   return {
-    teamName: (rows[0][0] || '').trim(),
+    teamName: displayTeamName((rows[0][0] || '').trim()),
     players,
     weeks: gameRows,
   };
@@ -262,7 +263,7 @@ export function parseStandingsCSV(csv: string): { avgMap: Record<string, number>
 
   for (let i = 1; i < lines.length; i++) {
     const cols = parseCSVLine(lines[i]);
-    const team = (cols[teamIdx] || '').trim();
+    const team = displayTeamName((cols[teamIdx] || '').trim());
     if (!team) continue;
 
     const avg = avgGameIdx >= 0 ? parseInt((cols[avgGameIdx] || '').replace(/[^0-9]/g, '')) : 0;
@@ -323,8 +324,8 @@ function parseScheduleCSVHorizontal(csv: string): WeekSchedule[] {
         currentSlot = { time: label, lanes: [] };
         week.slots.push(currentSlot);
       } else if (/^lane\s*\d/i.test(label) && currentSlot) {
-        const home = (cells[laneCol + 1] || '').trim();
-        const away = (cells[laneCol + 3] || '').trim();
+        const home = displayTeamName((cells[laneCol + 1] || '').trim());
+        const away = displayTeamName((cells[laneCol + 3] || '').trim());
         if (home || away) currentSlot.lanes.push({ lane: label, home, away });
       }
     }
@@ -352,7 +353,7 @@ function parseScheduleCSVVertical(csv: string): WeekSchedule[] {
       currentSlot = { time: parts[0], lanes: [] };
       currentWeek.slots.push(currentSlot);
     } else if (/^lane/i.test(parts[0]) && currentSlot) {
-      currentSlot.lanes.push({ lane: parts[0], home: parts[1] || '', away: parts[3] || '' });
+      currentSlot.lanes.push({ lane: parts[0], home: displayTeamName(parts[1] || ''), away: displayTeamName(parts[3] || '') });
     }
   }
   return weeks;

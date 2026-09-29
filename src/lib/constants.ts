@@ -137,6 +137,16 @@ export function normTeam(t: string): string {
   return normStr(t);
 }
 
+// ── Display name overrides (shorten long team names from the sheet) ───────────
+const TEAM_DISPLAY_NAMES: Record<string, string> = {
+  "michael bowlton's greatest splits": "Michael BOWLton's",
+};
+
+/** Map a team name from the sheet to its display name */
+export function displayTeamName(name: string): string {
+  return TEAM_DISPLAY_NAMES[name.toLowerCase().trim()] || name;
+}
+
 // ── Date helpers ──────────────────────────────────────────────────────────────
 const MONTH_MAP: Record<string, number> = {
   jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
