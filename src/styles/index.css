@@ -42,6 +42,7 @@ body {
   background-size: 300px;
   background-repeat: repeat;
   background-position: center top;
+  background-attachment: fixed;
 }
 
 /* ─── INTRO SCREEN ──────────────────────────────────── */
