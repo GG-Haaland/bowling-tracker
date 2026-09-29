@@ -197,14 +197,35 @@ export default function DashboardPage({
         }}>
           YOUR TEAM
         </div>
-        <div style={{
-          fontSize: '1.2em',
-          fontWeight: 900,
-          color: 'white',
-          letterSpacing: '0.06em',
-        }}>
-          {selectedTeamName.toUpperCase()}
-        </div>
+        <select
+          value={selectedTeamName}
+          onChange={e => onChangeTeamByName(e.target.value)}
+          style={{
+            width: '100%',
+            fontSize: '1.1em',
+            fontWeight: 900,
+            fontFamily: 'var(--font-heading)',
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'white',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: '1px solid var(--soft-black)',
+            cursor: 'pointer',
+            appearance: 'none',
+            WebkitAppearance: 'none',
+            paddingBottom: '0.15em',
+            backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23888\' stroke-width=\'3\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E")',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 0 center',
+          }}
+        >
+          {(season?.teamNames || []).map(name => (
+            <option key={name} value={name} style={{ background: 'var(--dark-black)', color: 'white' }}>
+              {name.toUpperCase()}
+            </option>
+          ))}
+        </select>
         {teamStanding && (
           <>
             <div style={{
