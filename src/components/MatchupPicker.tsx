@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { WeekSchedule, TeamGame, Player } from '@/lib/types';
+import type { WeekSchedule, TeamGame, Player, StandingsEntry } from '@/lib/types';
 
 interface MatchupPickerProps {
   schedule: WeekSchedule;
@@ -8,6 +8,14 @@ interface MatchupPickerProps {
   roster: Player[];
   onSelectGame: (game: TeamGame, gameIdx: number) => void;
   onTeamChange?: (teamName: string) => void;
+  standings?: StandingsEntry[];
+}
+
+function placeLabel(p: number): string {
+  if (p === 1) return '1st';
+  if (p === 2) return '2nd';
+  if (p === 3) return '3rd';
+  return p + 'th';
 }
 
 export default function MatchupPicker({
@@ -17,6 +25,7 @@ export default function MatchupPicker({
   roster,
   onSelectGame,
   onTeamChange,
+  standings = [],
 }: MatchupPickerProps) {
   const [yourTeam, setYourTeam] = useState(selectedTeamName);
   const [games, setGames] = useState<TeamGame[]>([]);
@@ -26,6 +35,10 @@ export default function MatchupPicker({
   const teams = [...new Set(
     schedule.slots.flatMap(s => s.lanes.flatMap(l => [l.home, l.away]))
   )].filter(Boolean).sort();
+
+  // Helper to find a team's standing
+  const getRecord = (name: string) =>
+    standings.find(s => s.team.toLowerCase() === name.toLowerCase()) || null;
 
   useEffect(() => {
     setYourTeam(selectedTeamName);
@@ -43,7 +56,6 @@ export default function MatchupPicker({
   const handleTeamChange = (team: string) => {
     setYourTeam(team);
     setActiveGameIdx(null);
-    // Notify parent so YOUR TEAM card & WEEK RESULTS update too
     if (onTeamChange) {
       onTeamChange(team);
     }
@@ -53,6 +65,8 @@ export default function MatchupPicker({
     setActiveGameIdx(idx);
     onSelectGame(games[idx], idx);
   };
+
+  const yourRecord = getRecord(yourTeam);
 
   return (
     <div className="card">
@@ -83,6 +97,21 @@ export default function MatchupPicker({
             <option value="">— SELECT YOUR TEAM —</option>
             {teams.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
+          {/* Your team record */}
+          {yourRecord && (
+            <div style={{
+              textAlign: 'center', marginTop: '0.35em',
+              fontSize: '0.72em', color: 'var(--smoke)', letterSpacing: '0.05em',
+            }}>
+              <span style={{ color: 'var(--yellow)', fontWeight: 800 }}>
+                {placeLabel(yourRecord.place)}
+              </span>
+              {' \u2022 '}
+              <span style={{ fontWeight: 700 }}>
+                {yourRecord.wins}-{yourRecord.losses}{yourRecord.ties > 0 ? '-' + yourRecord.ties : ''}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Game buttons */}
@@ -98,19 +127,35 @@ export default function MatchupPicker({
               {yourTeam ? 'No games scheduled this week' : 'Select your team above'}
             </div>
           ) : (
-            games.map((g, i) => (
-              <button
-                key={i}
-                className={`game-select-btn ${activeGameIdx === i ? 'active' : ''}`}
-                onClick={() => handleGameClick(i)}
-                style={{ display: 'grid', gridTemplateColumns: '5.2em 4.5em 3.5em 1fr', alignItems: 'center', textAlign: 'left' }}
-              >
-                <span style={{ color: 'var(--yellow)', whiteSpace: 'nowrap' }}>GAME {i + 1}</span>
-                <span style={{ color: 'var(--smoke)', fontSize: '0.85em', textAlign: 'center' }}>{g.lane}</span>
-                <span style={{ color: 'var(--smoke)', fontSize: '0.85em', textAlign: 'center' }}>{g.time}</span>
-                <span style={{ color: 'var(--light-blue)', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>vs {g.opponent}</span>
-              </button>
-            ))
+            games.map((g, i) => {
+              const oppRecord = getRecord(g.opponent);
+              return (
+                <button
+                  key={i}
+                  className={`game-select-btn ${activeGameIdx === i ? 'active' : ''}`}
+                  onClick={() => handleGameClick(i)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', textAlign: 'left', gap: '0.15em' }}
+                >
+                  <div style={{ display: 'grid', gridTemplateColumns: '5.2em 4.5em 3.5em 1fr', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--yellow)', whiteSpace: 'nowrap' }}>GAME {i + 1}</span>
+                    <span style={{ color: 'var(--smoke)', fontSize: '0.85em', textAlign: 'center' }}>{g.lane}</span>
+                    <span style={{ color: 'var(--smoke)', fontSize: '0.85em', textAlign: 'center' }}>{g.time}</span>
+                    <span style={{ color: 'var(--light-blue)', textAlign: 'right', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>vs {g.opponent}</span>
+                  </div>
+                  {oppRecord && (
+                    <div style={{ textAlign: 'right', fontSize: '0.68em', color: 'var(--smoke)', letterSpacing: '0.04em' }}>
+                      <span style={{ color: 'var(--light-blue)', fontWeight: 700 }}>
+                        {placeLabel(oppRecord.place)}
+                      </span>
+                      {' \u2022 '}
+                      <span style={{ fontWeight: 600 }}>
+                        {oppRecord.wins}-{oppRecord.losses}{oppRecord.ties > 0 ? '-' + oppRecord.ties : ''}
+                      </span>
+                    </div>
+                  )}
+                </button>
+              );
+            })
           )}
         </div>
 

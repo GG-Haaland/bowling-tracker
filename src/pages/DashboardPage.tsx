@@ -305,6 +305,7 @@ export default function DashboardPage({
       roster={sheetData.roster}
       onSelectGame={handleSelectGame}
       onTeamChange={handleTeamChange}
+      standings={sheetData.standings}
     />
   );
 
